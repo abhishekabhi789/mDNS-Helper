@@ -1,7 +1,8 @@
 [versions]
 agp = "8.5.2"
-daggerHilt = "2.51.1"
+daggerHilt = "2.52"
 hiltNavigationCompose = "1.2.0"
+#noinspection GradleDependency
 kotlin = "1.9.0" #kapt will fail if updated to 2.0
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -10,11 +11,12 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.5"
 activityCompose = "1.9.2"
 composeBom = "2024.09.01"
+materialIconsExtended = "1.7.1"
+rx2dnssd = "0.9.17"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "kotlin" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "daggerHilt" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "daggerHilt" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -30,6 +32,8 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
+rx2dnssd = { module = "com.github.andriydruk:rx2dnssd", version.ref = "rx2dnssd" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

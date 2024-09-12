@@ -11,5 +11,5 @@ import dagger.hilt.android.qualifiers.ActivityContext
 @Module
 object AppModule{
     @Provides
-    fun getNsdHelper(@ActivityContext context: Context) = NsdHelper(context)
+    fun getNsdHelper(@ActivityContext context: Context) = DnsSdHelper(context)
 }

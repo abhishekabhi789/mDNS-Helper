@@ -1,6 +1,5 @@
 package io.github.abhishekabhi789.mdnshelper
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,7 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MdnsHelperViewModel @Inject constructor(private val nsdHelper: NsdHelper) : ViewModel() {
+class MdnsHelperViewModel @Inject constructor(private val dnssdHelper: DnsSdHelper) : ViewModel() {
 
     private val _discoveryRunning = MutableStateFlow(false)
     val discoveryRunning: StateFlow<Boolean> = _discoveryRunning.asStateFlow()
@@ -21,59 +20,36 @@ class MdnsHelperViewModel @Inject constructor(private val nsdHelper: NsdHelper) 
     val availableServices: StateFlow<List<MdnsInfo>> = _availableServices.asStateFlow()
 
     init {
-        nsdHelper.onServiceFoundCallback = { nsdInfo, resolverStatus ->
+        dnssdHelper.onServiceFoundCallback = { bonjourService ->
             viewModelScope.launch {
                 _availableServices.update { list ->
-                    val mdnsInfo = MdnsInfo(nsdInfo).apply {
-                        this.updateResolverStatus(resolverStatus)
-                    }
-                    list.toMutableList().apply { add(mdnsInfo) }
+                    if(list.none { it.bonjourService == bonjourService }){
+                        list.toMutableList().apply { add(MdnsInfo(bonjourService)) }
+                    } else list
                 }
             }
         }
 
-        nsdHelper.onServiceLostCallback = { service ->
+        dnssdHelper.onServiceLostCallback = { serviceName ->
             viewModelScope.launch {
                 _availableServices.update { list ->
                     list.toMutableList()
-                        .apply { removeAll { it.getServiceType() == service.serviceType && it.getServiceName() == service.serviceName } }
+                        .apply { removeAll { it.getServiceName() == serviceName } }
                 }
             }
         }
-
-        nsdHelper.onServiceResolvedCallback = { serviceInfo, resolverStatus ->
-            viewModelScope.launch {
-                _availableServices.update { infoList ->
-                    infoList.map { info ->
-                        if (info.nsdServiceInfo == serviceInfo) {
-                            if (resolverStatus == MdnsInfo.ResolverStatus.RESOLVED){
-                                serviceInfo.host.hostAddress?.let { info.setHostAddress(it) }
-                                info.setPort(serviceInfo.port)
-                                Log.d("TAG", "updated info ")
-                            }
-                            info.updateResolverStatus(resolverStatus)
-                        }
-                        info
-                    }
-                }
-            }
-        }
-    }
-
-    fun resolveServiceInfo(info: MdnsInfo) {
-        nsdHelper.resolveInfo(info.nsdServiceInfo)
     }
 
     fun startServiceDiscovery() {
         viewModelScope.launch {
-            nsdHelper.startDiscovery()
+            dnssdHelper.startServiceDiscovery()
             _discoveryRunning.value = true
         }
     }
 
     fun stopServiceDiscovery() {
         viewModelScope.launch {
-            nsdHelper.stopDiscovery()
+            dnssdHelper.stopServiceDiscovery()
             _discoveryRunning.value = false
         }
     }
