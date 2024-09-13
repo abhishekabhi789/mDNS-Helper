@@ -1,8 +1,10 @@
 package io.github.abhishekabhi789.mdnshelper
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +25,8 @@ class MdnsHelperViewModel @Inject constructor(private val dnssdHelper: DnsSdHelp
         dnssdHelper.onServiceFoundCallback = { bonjourService ->
             viewModelScope.launch {
                 _availableServices.update { list ->
-                    if(list.none { it.bonjourService == bonjourService }){
+                    if (list.none { it.bonjourService == bonjourService }) {
+                        Log.d(TAG, "onServiceFound: new service ${bonjourService.regType}")
                         list.toMutableList().apply { add(MdnsInfo(bonjourService)) }
                     } else list
                 }
@@ -42,15 +45,26 @@ class MdnsHelperViewModel @Inject constructor(private val dnssdHelper: DnsSdHelp
 
     fun startServiceDiscovery() {
         viewModelScope.launch {
+            Log.d(TAG, "startServiceDiscovery: starting with timeout $SCANNER_TIMEOUT")
             dnssdHelper.startServiceDiscovery()
-            _discoveryRunning.value = true
+            _discoveryRunning.update { true }
+            launch {
+                delay(SCANNER_TIMEOUT)
+                Log.d(TAG, "startServiceDiscovery: scan timeout")
+                stopServiceDiscovery()
+            }
         }
     }
 
     fun stopServiceDiscovery() {
         viewModelScope.launch {
             dnssdHelper.stopServiceDiscovery()
-            _discoveryRunning.value = false
+            _discoveryRunning.update { false }
         }
+    }
+
+    companion object {
+        private const val TAG = "MdnsHelperViewModel"
+        private const val SCANNER_TIMEOUT = 10_000L //30s
     }
 }

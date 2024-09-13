@@ -80,7 +80,7 @@ class DnsSdHelper @Inject constructor(@ApplicationContext context: Context) {
         try {
             browseDisposable = rxDnsSd.browse(regType, domain)
                 .compose(rxDnsSd.resolve())
-                .compose(rxDnsSd.queryRecords())
+                .compose(rxDnsSd.queryIPRecords())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ bonjourService ->
