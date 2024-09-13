@@ -73,6 +73,6 @@ class BookmarkManager @Inject constructor(@ApplicationContext private val contex
         private const val TAG = "BookmarkManager"
         private const val BOOKMARKS_PREF_NAME = "bookmark_preferences"
         private const val BOOKMARK_LIST_KEY = "bookmarks"
-        private const val BOOKMARK_SEPARATOR = "-|-"
+        private const val BOOKMARK_SEPARATOR = ","
     }
 }
