@@ -18,6 +18,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,7 +42,10 @@ import io.github.abhishekabhi789.mdnshelper.R
 fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
     val discoveryRunning by viewModel.discoveryRunning.collectAsState()
     val availableServices by viewModel.availableServices.collectAsState()
-    val sortedList = remember(availableServices){availableServices.sortedByDescending { it.isBookMarked() }}
+    val unavailableBookmarks by viewModel.unavailableBookmarks.collectAsState()
+    val sortedList = remember(availableServices) {
+        availableServices.sortedByDescending { it.isBookMarked() }
+    }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val (fabLabel, fabIcon, fabAction) = if (discoveryRunning) {
         Triple("Stop Scan", Icons.Default.SearchOff, viewModel::stopServiceDiscovery)
@@ -82,12 +86,40 @@ fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
                     }
                 }
             } else {
+                stickyHeader(key = "available_services") {
+                    Row(Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Available services",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
+                }
                 items(items = sortedList, key = { it.hashCode() }) { mdnsInfo ->
                     ServiceInfoItem(
                         info = mdnsInfo,
                         modifier = Modifier.padding(horizontal = 8.dp),
                         onBookMarkButtonClicked = { it.action.invoke(viewModel, mdnsInfo) }
                     )
+                }
+            }
+            if (availableServices.isNotEmpty() && unavailableBookmarks.isNotEmpty()) {
+                stickyHeader(key = "unreachable_bookmarks") {
+                    Row(Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Unreachable bookmarks",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
+                }
+            }
+            items(unavailableBookmarks) { bookmark ->
+                UnReachableBookmarks(
+                    info = bookmark,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    it.action.invoke(viewModel, bookmark)
                 }
             }
         }

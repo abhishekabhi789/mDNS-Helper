@@ -10,6 +10,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.abhishekabhi789.mdnshelper.MdnsHelperViewModel
 import io.github.abhishekabhi789.mdnshelper.MdnsInfo
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +20,8 @@ import javax.inject.Singleton
 class BookmarkManager @Inject constructor(@ApplicationContext private val context: Context) {
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences(BOOKMARKS_PREF_NAME, Context.MODE_PRIVATE)
-    private lateinit var bookmarks: Set<Pair<String, String>>
+    private var _bookmarks = MutableStateFlow<Set<Pair<String, String>>>(emptySet())
+    val bookmarks = _bookmarks.asStateFlow()
 
     init {
         refreshBookmarks()
@@ -30,29 +34,37 @@ class BookmarkManager @Inject constructor(@ApplicationContext private val contex
         val bookmarkSet = savedBookMarks?.map { item ->
             item.split(BOOKMARK_SEPARATOR).let { Pair(it.first(), it.last()) }
         }?.toSet() ?: emptySet()
-        bookmarks = bookmarkSet
+        _bookmarks.update { bookmarkSet }
     }
 
     fun isBookmarked(info: MdnsInfo): Boolean {
-        return bookmarks.any { it.first == info.getServiceType() && it.second == info.getServiceName() }
+        return _bookmarks.value.any { it.first == info.getServiceType() && it.second == info.getServiceName() }
     }
 
     fun addBookMark(info: MdnsInfo) {
-        val tempSet = bookmarks.toMutableSet()
-        val bookmarkItem = Pair(info.getServiceType(), info.getServiceName())
-        tempSet.add(bookmarkItem)
-        val savableSet = tempSet.map { it.first + BOOKMARK_SEPARATOR + it.second }.toSet()
-        sharedPreferences.edit().putStringSet(BOOKMARK_LIST_KEY, savableSet).apply()
-        bookmarks = tempSet
+        _bookmarks.update { bookmarksSet ->
+            val mutableSet = bookmarksSet.toMutableSet()
+            val bookmarkItem = Pair(info.getServiceType(), info.getServiceName())
+            mutableSet.add(bookmarkItem)
+            val savableSet = mutableSet.map { it.first + BOOKMARK_SEPARATOR + it.second }.toSet()
+            sharedPreferences.edit().putStringSet(BOOKMARK_LIST_KEY, savableSet).apply()
+            mutableSet
+        }
         refreshBookmarks()
+
+
     }
 
     fun removeBookmark(info: MdnsInfo) {
-        val tempSet = bookmarks.toMutableSet()
-        val bookmarkItem = Pair(info.getServiceType(), info.getServiceName())
-        tempSet.remove(bookmarkItem)
-        val savableSet = tempSet.map { it.first + BOOKMARK_SEPARATOR + it.second }.toSet()
-        sharedPreferences.edit().putStringSet(BOOKMARK_LIST_KEY, savableSet).apply()
+        _bookmarks.update { bookmarksSet ->
+            val mutableSet = bookmarksSet.toMutableSet()
+            val bookmarkItem = Pair(info.getServiceType(), info.getServiceName())
+            mutableSet.remove(bookmarkItem)
+            val savableSet = mutableSet.map { it.first + BOOKMARK_SEPARATOR + it.second }.toSet()
+            sharedPreferences.edit().putStringSet(BOOKMARK_LIST_KEY, savableSet).apply()
+            mutableSet
+        }
+
         refreshBookmarks()
     }
 
