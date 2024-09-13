@@ -75,10 +75,6 @@ class MdnsHelperViewModel @Inject constructor(
     }
 
     fun addOrRemoveFromBookmark(info: MdnsInfo, add: Boolean) {
-        Log.d(
-            TAG,
-            "addOrRemoveFromBookmark: toggling bookmark status of ${info.getServiceType()} to $add"
-        )
         viewModelScope.launch {
             bookmarkManager.let { if (add) it.addBookMark(info) else it.removeBookmark(info) }
             _availableServices.update { currentList ->

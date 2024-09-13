@@ -30,7 +30,6 @@ class BookmarkManager @Inject constructor(@ApplicationContext private val contex
         val bookmarkSet = savedBookMarks?.map { item ->
             item.split(BOOKMARK_SEPARATOR).let { Pair(it.first(), it.last()) }
         }?.toSet() ?: emptySet()
-        Log.d(TAG, "refreshBookmarks: updating bookmark list total items ${bookmarkSet.size}")
         bookmarks = bookmarkSet
     }
 
@@ -45,6 +44,7 @@ class BookmarkManager @Inject constructor(@ApplicationContext private val contex
         val savableSet = tempSet.map { it.first + BOOKMARK_SEPARATOR + it.second }.toSet()
         sharedPreferences.edit().putStringSet(BOOKMARK_LIST_KEY, savableSet).apply()
         bookmarks = tempSet
+        refreshBookmarks()
     }
 
     fun removeBookmark(info: MdnsInfo) {
@@ -53,6 +53,7 @@ class BookmarkManager @Inject constructor(@ApplicationContext private val contex
         tempSet.remove(bookmarkItem)
         val savableSet = tempSet.map { it.first + BOOKMARK_SEPARATOR + it.second }.toSet()
         sharedPreferences.edit().putStringSet(BOOKMARK_LIST_KEY, savableSet).apply()
+        refreshBookmarks()
     }
 
     enum class BookMarkAction(
@@ -73,6 +74,6 @@ class BookmarkManager @Inject constructor(@ApplicationContext private val contex
         private const val TAG = "BookmarkManager"
         private const val BOOKMARKS_PREF_NAME = "bookmark_preferences"
         private const val BOOKMARK_LIST_KEY = "bookmarks"
-        private const val BOOKMARK_SEPARATOR = "-|-"
+        private const val BOOKMARK_SEPARATOR = ","
     }
 }

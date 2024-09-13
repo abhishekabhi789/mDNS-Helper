@@ -25,6 +25,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -40,6 +41,7 @@ import io.github.abhishekabhi789.mdnshelper.R
 fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
     val discoveryRunning by viewModel.discoveryRunning.collectAsState()
     val availableServices by viewModel.availableServices.collectAsState()
+    val sortedList = remember(availableServices){availableServices.sortedByDescending { it.isBookMarked() }}
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val (fabLabel, fabIcon, fabAction) = if (discoveryRunning) {
         Triple("Stop Scan", Icons.Default.SearchOff, viewModel::stopServiceDiscovery)
@@ -80,7 +82,7 @@ fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
                     }
                 }
             } else {
-                items(items = availableServices, key = { it.hashCode() }) { mdnsInfo ->
+                items(items = sortedList, key = { it.hashCode() }) { mdnsInfo ->
                     ServiceInfoItem(
                         info = mdnsInfo,
                         modifier = Modifier.padding(horizontal = 8.dp),
