@@ -80,10 +80,11 @@ fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
                     }
                 }
             } else {
-                items(items = availableServices, key = { it.hashCode() }) { serviceInfo ->
+                items(items = availableServices, key = { it.hashCode() }) { mdnsInfo ->
                     ServiceInfoItem(
-                        info = serviceInfo,
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                        info = mdnsInfo,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        onBookMarkButtonClicked = { it.action.invoke(viewModel, mdnsInfo) }
                     )
                 }
             }

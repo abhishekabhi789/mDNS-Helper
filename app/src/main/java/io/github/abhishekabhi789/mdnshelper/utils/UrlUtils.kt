@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper
+package io.github.abhishekabhi789.mdnshelper.utils
 
 import android.content.Context
 import android.content.Intent

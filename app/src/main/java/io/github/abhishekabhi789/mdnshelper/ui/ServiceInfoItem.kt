@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
@@ -25,44 +28,61 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.druk.rx2dnssd.BonjourService
 import io.github.abhishekabhi789.mdnshelper.MdnsInfo
-import io.github.abhishekabhi789.mdnshelper.UrlUtils
+import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager.BookMarkAction
+import io.github.abhishekabhi789.mdnshelper.utils.UrlUtils
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ServiceInfoItem(modifier: Modifier = Modifier, info: MdnsInfo) {
+fun ServiceInfoItem(
+    modifier: Modifier = Modifier,
+    info: MdnsInfo,
+    onBookMarkButtonClicked: (BookMarkAction) -> Unit
+) {
     var expanded: Boolean by remember { mutableStateOf(false) }
+    var isBookmarked: Boolean by remember { mutableStateOf(info.isBookMarked()) }
+    val bookmarkAction = if (isBookmarked) BookMarkAction.REMOVE else BookMarkAction.ADD
+
     Card(onClick = { expanded = !expanded }, modifier = modifier.animateContentSize()) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier
+                .padding(8.dp)
+                .wrapContentHeight()
         ) {
-            FlowRow(
-                Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
-            ) {
-                Text(
-                    text = info.getServiceName(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                VerticalDivider(modifier = Modifier.padding(horizontal = 8.dp))
-                Text(
-                    text = info.getServiceType(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary
-                )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                FlowRow(
+                    Modifier
+                        .height(IntrinsicSize.Min)
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = info.getServiceName(),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    VerticalDivider(modifier = Modifier.padding(horizontal = 8.dp))
+                    Text(
+                        text = info.getServiceType(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                IconButton(onClick = {onBookMarkButtonClicked(bookmarkAction);isBookmarked = !isBookmarked}) {
+                    Icon(
+                        imageVector = bookmarkAction.icon,
+                        contentDescription = bookmarkAction.label
+                    )
+                }
             }
             if (expanded) Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
-                    .fillMaxHeight()
+
             ) {
                 UrlSection(info = info, expanded = expanded)
             } else FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 UrlSection(info = info, expanded = expanded)
             }
@@ -105,5 +125,5 @@ fun PreviewServiceInfoItem() {
             .hostname("test.local.")
             .build()
     val dummyInfo = MdnsInfo(dummyService)
-    ServiceInfoItem(info = dummyInfo)
+    ServiceInfoItem(info = dummyInfo) {}
 }

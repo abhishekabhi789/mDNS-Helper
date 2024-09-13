@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +14,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MdnsHelperViewModel @Inject constructor(private val dnssdHelper: DnsSdHelper) : ViewModel() {
+class MdnsHelperViewModel @Inject constructor(
+    private val dnssdHelper: DnsSdHelper,
+    private val bookmarkManager: BookmarkManager
+) : ViewModel() {
 
     private val _discoveryRunning = MutableStateFlow(false)
     val discoveryRunning: StateFlow<Boolean> = _discoveryRunning.asStateFlow()
@@ -27,7 +31,10 @@ class MdnsHelperViewModel @Inject constructor(private val dnssdHelper: DnsSdHelp
                 _availableServices.update { list ->
                     if (list.none { it.bonjourService == bonjourService }) {
                         Log.d(TAG, "onServiceFound: new service ${bonjourService.regType}")
-                        list.toMutableList().apply { add(MdnsInfo(bonjourService)) }
+                        val mdnsInfo = MdnsInfo(bonjourService).apply {
+                            setBookmarkStatus(checkBookmarked(this))
+                        }
+                        list.toMutableList().apply { add(mdnsInfo) }
                     } else list
                 }
             }
@@ -41,6 +48,10 @@ class MdnsHelperViewModel @Inject constructor(private val dnssdHelper: DnsSdHelp
                 }
             }
         }
+    }
+
+    private fun checkBookmarked(info: MdnsInfo): Boolean {
+        return bookmarkManager.isBookmarked(info)
     }
 
     fun startServiceDiscovery() {
@@ -60,6 +71,21 @@ class MdnsHelperViewModel @Inject constructor(private val dnssdHelper: DnsSdHelp
         viewModelScope.launch {
             dnssdHelper.stopServiceDiscovery()
             _discoveryRunning.update { false }
+        }
+    }
+
+    fun addOrRemoveFromBookmark(info: MdnsInfo, add: Boolean) {
+        Log.d(
+            TAG,
+            "addOrRemoveFromBookmark: toggling bookmark status of ${info.getServiceType()} to $add"
+        )
+        viewModelScope.launch {
+            bookmarkManager.let { if (add) it.addBookMark(info) else it.removeBookmark(info) }
+            _availableServices.update { currentList ->
+                val tempList = currentList.toMutableList()
+                tempList.find { it == info }?.setBookmarkStatus(checkBookmarked(info))
+                tempList
+            }
         }
     }
 
