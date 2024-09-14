@@ -4,7 +4,8 @@ import com.github.druk.rx2dnssd.BonjourService
 
 data class MdnsInfo(val bonjourService: BonjourService) {
 
-    private var bookmarked = false
+    var isBookmarked = false
+        private set
 
     fun getServiceType(): String = bonjourService.regType
 
@@ -14,9 +15,7 @@ data class MdnsInfo(val bonjourService: BonjourService) {
 
     fun getHostAddress(): String? = bonjourService.inet4Address?.hostAddress
 
-    fun isBookMarked(): Boolean = this.bookmarked
-
     fun setBookmarkStatus(isBookmarked: Boolean) {
-        this.bookmarked = isBookmarked
+        this.isBookmarked = isBookmarked
     }
 }

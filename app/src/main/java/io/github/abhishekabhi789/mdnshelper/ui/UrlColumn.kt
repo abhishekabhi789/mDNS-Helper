@@ -5,9 +5,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,10 +29,9 @@ fun UrlColumn(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ChipButton(
                     label = "Browse",
-                    icon = Icons.Default.OpenInBrowser,
                     onClick = onOpenClick
                 )
-                ChipButton(label = "Share", icon = Icons.Default.Share, onClick = onShareClick)
+                ChipButton(label = "Share", onClick = onShareClick)
             }
         }
     }

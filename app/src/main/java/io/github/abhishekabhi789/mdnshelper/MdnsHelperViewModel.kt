@@ -1,11 +1,14 @@
 package io.github.abhishekabhi789.mdnshelper
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.druk.rx2dnssd.BonjourService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager
+import io.github.abhishekabhi789.mdnshelper.utils.ShortcutManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MdnsHelperViewModel @Inject constructor(
     private val dnssdHelper: DnsSdHelper,
-    private val bookmarkManager: BookmarkManager
+    private val bookmarkManager: BookmarkManager,
+    private val shortcutManager: ShortcutManager?
 ) : ViewModel() {
 
     private val _discoveryRunning = MutableStateFlow(false)
@@ -107,6 +111,13 @@ class MdnsHelperViewModel @Inject constructor(
                 tempList.find { it == info }?.setBookmarkStatus(checkBookmarked(info))
                 tempList
             }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun addPinnedShortcut(info: MdnsInfo, onComplete: (success: Boolean) -> Unit) {
+        viewModelScope.launch {
+            shortcutManager?.addPinnedShortcut(info, onComplete)
         }
     }
 

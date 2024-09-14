@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.mdnshelper.ui
 
+import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,10 +38,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.druk.rx2dnssd.BonjourService
 import io.github.abhishekabhi789.mdnshelper.MdnsHelperViewModel
+import io.github.abhishekabhi789.mdnshelper.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.R
-import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager.BookMarkAction.ADD
-import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager.BookMarkAction.REMOVE
+import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager.BookMarkAction
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -52,7 +54,7 @@ fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
     val availableServices by viewModel.availableServices.collectAsState()
     val unavailableBookmarks by viewModel.unavailableBookmarks.collectAsState()
     val sortedList = remember(availableServices) {
-        availableServices.sortedByDescending { it.isBookMarked() }
+        availableServices.sortedByDescending { it.isBookmarked }
     }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val (fabLabel, fabIcon, fabAction) = if (discoveryRunning) {
@@ -109,14 +111,29 @@ fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
                         info = mdnsInfo,
                         modifier = Modifier.padding(horizontal = 8.dp),
                         onBookMarkButtonClicked = { bookmarkAction ->
+                            var actionSuccess = false
                             bookmarkAction.action.invoke(viewModel, mdnsInfo) { success: Boolean ->
+                                actionSuccess = success
                                 scope.launch {
                                     val message = when (bookmarkAction) {
-                                        ADD -> if (success) "Added to bookmarks" else "failed to add to bookmarks"
-                                        REMOVE -> if (success) "Removed from bookmarks" else "Failed to remove from bookmarks"
+                                        BookMarkAction.ADD -> if (success) "Added to bookmarks" else "failed to add to bookmarks"
+                                        BookMarkAction.REMOVE -> if (success) "Removed from bookmarks" else "Failed to remove from bookmarks"
                                     }
                                     snackbarHostState.currentSnackbarData?.dismiss()
                                     snackbarHostState.showSnackbar(message = message)
+                                }
+                            }
+                            actionSuccess
+                        },
+                        onShortcutButtonClicked = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                viewModel.addPinnedShortcut(info = mdnsInfo) { success ->
+                                    scope.launch {
+                                        val message: String = if (success) "Shortcut added"
+                                        else "Failed to add shortcut"
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                        snackbarHostState.showSnackbar(message = message)
+                                    }
                                 }
                             }
                         }
@@ -139,7 +156,9 @@ fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
                     info = bookmark,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
+                    var actionSuccess = false
                     it.action.invoke(viewModel, bookmark) { success: Boolean ->
+                        actionSuccess = success
                         val message = if (success) "Removed from bookmarks"
                         else "Failed to remove from bookmarks"
                         scope.launch {
@@ -147,6 +166,7 @@ fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
                             snackbarHostState.showSnackbar(message)
                         }
                     }
+                    actionSuccess
                 }
             }
         }
@@ -167,4 +187,13 @@ fun TopBar(modifier: Modifier = Modifier, scrollBehavior: TopAppBarScrollBehavio
 @Composable
 fun PreviewMDNSApp() {
     AppMain()
+}
+
+fun getDummyServiceInfo(): MdnsInfo {
+    val dummyService =
+        BonjourService.Builder(0, 0, "My Local Website", "_myweb._tcp", "local.")
+            .port(789)
+            .hostname("test.local.")
+            .build()
+    return MdnsInfo(dummyService)
 }
