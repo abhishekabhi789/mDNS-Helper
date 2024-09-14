@@ -92,9 +92,16 @@ class MdnsHelperViewModel @Inject constructor(
         }
     }
 
-    fun addOrRemoveFromBookmark(info: MdnsInfo, add: Boolean) {
+    fun addOrRemoveFromBookmark(
+        info: MdnsInfo,
+        add: Boolean,
+        onComplete: (success: Boolean) -> Unit
+    ) {
         viewModelScope.launch {
-            bookmarkManager.let { if (add) it.addBookMark(info) else it.removeBookmark(info) }
+            bookmarkManager.let {
+                val success = if (add) it.addBookMark(info) else it.removeBookmark(info)
+                onComplete(success)
+            }
             _availableServices.update { currentList ->
                 val tempList = currentList.toMutableList()
                 tempList.find { it == info }?.setBookmarkStatus(checkBookmarked(info))

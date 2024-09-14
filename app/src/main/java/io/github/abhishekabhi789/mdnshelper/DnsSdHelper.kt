@@ -37,7 +37,10 @@ class DnsSdHelper @Inject constructor(@ApplicationContext context: Context) {
     private fun processNextInQueue() {
         if (!isResolverRunning && serviceQueue.isNotEmpty()) {
             val nextRegType = serviceQueue.poll()
-            Log.d(TAG, "processNextInQueue: processing next, remaining ${serviceQueue.size}")
+            Log.d(
+                TAG,
+                "processNextInQueue: processing ${nextRegType?.serviceName}, remaining ${serviceQueue.size}"
+            )
             nextRegType?.let { resolveService(nextRegType) }
         }
     }
