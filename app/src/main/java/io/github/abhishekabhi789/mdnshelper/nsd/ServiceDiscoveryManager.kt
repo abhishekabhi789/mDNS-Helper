@@ -3,6 +3,7 @@ package io.github.abhishekabhi789.mdnshelper.nsd
 import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
 import com.github.druk.rx2dnssd.BonjourService
@@ -21,6 +22,8 @@ import javax.inject.Singleton
 @Singleton
 class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: Context) {
     private val nsdManager = context.getSystemService(Context.NSD_SERVICE) as NsdManager
+    private val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    private val multicastLock = wifiManager.createMulticastLock(TAG)
     private var rxDnsSd = createDnsSd(context)
     private lateinit var browseDisposable: Disposable
     private var isResolverRunning = false
@@ -28,6 +31,10 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
     var onServiceFoundCallback: ((BonjourService) -> Unit)? = null
     var onServiceLostCallback: ((serviceName: String) -> Unit)? = null
     private val serviceQueue: Queue<NsdServiceInfo> = LinkedList()
+
+    init {
+        multicastLock.setReferenceCounted(true)
+    }
 
     private fun enqueueList(regType: NsdServiceInfo) {
         serviceQueue.offer(regType)
@@ -106,6 +113,7 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
     fun startServiceDiscovery() {
         Log.d(TAG, "startServiceDiscovery: registering listener")
         try {
+            multicastLock.acquire()
             nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -121,6 +129,7 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
         }
         try {
             nsdManager.stopServiceDiscovery(discoveryListener)
+            multicastLock.release()
         } catch (e: Exception) {
             e.printStackTrace()
         }
