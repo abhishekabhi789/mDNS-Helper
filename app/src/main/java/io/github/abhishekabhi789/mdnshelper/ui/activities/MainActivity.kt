@@ -14,12 +14,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.mdnshelper.ui.screens.AppMain
 import io.github.abhishekabhi789.mdnshelper.ui.theme.MDNSHelperTheme
-import io.github.abhishekabhi789.mdnshelper.viewmodel.MdnsHelperViewModel
+import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val viewModel: MdnsHelperViewModel by viewModels()
+    private val viewModel: MainActivityViewmodel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

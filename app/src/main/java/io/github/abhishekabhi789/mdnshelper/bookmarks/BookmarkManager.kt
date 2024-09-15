@@ -8,7 +8,7 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.ui.graphics.vector.ImageVector
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.abhishekabhi789.mdnshelper.viewmodel.MdnsHelperViewModel
+import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -78,7 +78,7 @@ class BookmarkManager @Inject constructor(@ApplicationContext private val contex
     enum class BookMarkAction(
         val label: String,
         val icon: ImageVector,
-        val action: (viewModel: MdnsHelperViewModel, info: MdnsInfo, onComplete: (success: Boolean) -> Unit) -> Unit
+        val action: (viewModel: MainActivityViewmodel, info: MdnsInfo, onComplete: (success: Boolean) -> Unit) -> Unit
     ) {
         ADD(
             "Add to bookmarks", Icons.Default.BookmarkBorder,

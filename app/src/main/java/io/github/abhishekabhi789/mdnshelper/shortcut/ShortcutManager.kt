@@ -5,17 +5,17 @@ import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
-import android.net.Uri
 import android.os.Build
-import android.os.PersistableBundle
+import android.os.Bundle
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.BuildConfig
 import io.github.abhishekabhi789.mdnshelper.R
-import io.github.abhishekabhi789.mdnshelper.utils.UrlUtils
+import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.ui.activities.ShortcutHandleActivity
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,30 +41,27 @@ class ShortcutManager @Inject constructor(@ApplicationContext private val contex
         var success = false
         if (shortcutManager.isRequestPinShortcutSupported) {
             try {
-                val extras = PersistableBundle().apply {
+                val extras = Bundle().apply {
                     putString(KEY_SERVICE_TYPE, info.getServiceType())
-                    putString(KEY_SERVICE_NAME, info.getServiceName())
+                    putString(KEY_SERVICE_NAME, info.getDomain())
                 }
-                val shortcut =
-                    ShortcutInfo.Builder(context, info.getServiceType() + info.getServiceName())
-                        .apply {
-                            setShortLabel(info.getServiceName())
-                            setLongLabel("${info.getHostName()} from ${info.getServiceType()} ${info.getServiceName()}")
-                            setIcon(icon)
-                            setDisabledMessage("Failed to start shortcut, try recreating")
-                            info.getHostAddress()?.let {
-                                setIntent(
-                                    Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse(UrlUtils.addressAsUrl(it))
-                                    )
-                                )
-                            }
-                            setExtras(extras)
-                        }.build()
+                val shortcutIntent = Intent(context, ShortcutHandleActivity::class.java).apply {
+                    setAction(BuildConfig.SHORTCUT_ACTION_NAME)
+                    putExtras(extras)
+                    setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                }
+                val shortcutId = info.getServiceType() + info.getServiceName()
+                val shortcut = ShortcutInfo.Builder(context, shortcutId).apply {
+                    setShortLabel(info.getServiceName())
+                    setLongLabel("${info.getHostName()} from ${info.getServiceType()} ${info.getServiceName()}")
+                    setIcon(icon)
+                    setDisabledMessage("Failed to start shortcut, try recreating")
+                    info.getHostAddress()?.let { setIntent(shortcutIntent) }
+                }.build()
                 shortcutManager.requestPinShortcut(shortcut, null)
                 success = true
             } catch (e: Exception) {
+                e.printStackTrace()
                 success = false
             } finally {
                 onComplete(success)
@@ -93,6 +90,18 @@ class ShortcutManager @Inject constructor(@ApplicationContext private val contex
 
     fun isShortcutAdded(info: MdnsInfo): Boolean {
         return pinnedShortcuts.any { shortcutInfo -> isMatchingInfo(shortcutInfo, info) }
+    }
+
+    fun getShortcutInfoFromExtras(
+        extras: Bundle,
+        onFound: (regType: String, regName: String) -> Unit,
+        onFailed: () -> Unit
+    ) {
+        val regType = extras.getString(KEY_SERVICE_TYPE)
+        val regName = extras.getString(KEY_SERVICE_NAME)
+        if (regType != null && regName != null) {
+            onFound(regType, regName)
+        } else onFailed()
     }
 
     private fun isMatchingInfo(shortcutInfo: ShortcutInfoCompat, mdnsInfo: MdnsInfo): Boolean {

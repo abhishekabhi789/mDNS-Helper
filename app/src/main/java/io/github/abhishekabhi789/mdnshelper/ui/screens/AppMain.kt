@@ -44,12 +44,12 @@ import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAc
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.ui.components.ServiceInfoItem
 import io.github.abhishekabhi789.mdnshelper.ui.components.UnReachableBookmarks
-import io.github.abhishekabhi789.mdnshelper.viewmodel.MdnsHelperViewModel
+import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
+fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val discoveryRunning by viewModel.discoveryRunning.collectAsState()

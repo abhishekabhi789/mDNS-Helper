@@ -27,6 +27,7 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
     var isDiscoveryRunning: ((Boolean) -> Unit)? = null
     var onServiceFoundCallback: ((BonjourService) -> Unit)? = null
     var onServiceLostCallback: ((serviceName: String) -> Unit)? = null
+    var onError: ((errorMsg: String) -> Unit)? = null
     private val serviceQueue: Queue<NsdServiceInfo> = LinkedList()
 
     private fun enqueueList(regType: NsdServiceInfo) {
@@ -77,9 +78,7 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
         }
     }
 
-    private fun resolveService(serviceInfo: NsdServiceInfo) {
-        val (name, domain) = serviceInfo.serviceType.split(".")
-        val regType = "${serviceInfo.serviceName}.$name"
+    fun resolveServiceWithInfos(regType: String, domain: String) {
         try {
             browseDisposable = rxDnsSd.browse(regType, domain)
                 .compose(rxDnsSd.resolve())
@@ -97,10 +96,16 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
                 }, { throwable -> Log.e(TAG, "resolveService: failed", throwable) })
         } catch (e: Exception) {
             e.printStackTrace()
+            onError?.invoke(e.message ?: "error resolving")
         } finally {
             processNextInQueue()
         }
+    }
 
+    private fun resolveService(serviceInfo: NsdServiceInfo) {
+        val (name, domain) = serviceInfo.serviceType.split(".")
+        val regType = "${serviceInfo.serviceName}.$name"
+        resolveServiceWithInfos(regType, domain)
     }
 
     fun startServiceDiscovery() {

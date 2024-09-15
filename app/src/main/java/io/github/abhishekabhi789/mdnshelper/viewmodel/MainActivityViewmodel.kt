@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MdnsHelperViewModel @Inject constructor(
+class MainActivityViewmodel @Inject constructor(
     private val dnssdHelper: ServiceDiscoveryManager,
     private val bookmarkManager: BookmarkManager,
     private val shortcutManager: ShortcutManager?

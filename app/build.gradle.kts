@@ -20,6 +20,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        val shortcutActionName = "$applicationId.LAUNCH_SHORTCUT"
+        manifestPlaceholders["shortcutActionName"] = shortcutActionName
+        buildConfigField("String", "SHORTCUT_ACTION_NAME", "\"$shortcutActionName\"")
     }
 
     buildTypes {
@@ -40,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
