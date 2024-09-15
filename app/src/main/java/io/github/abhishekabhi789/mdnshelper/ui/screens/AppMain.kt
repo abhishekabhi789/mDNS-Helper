@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.ui
+package io.github.abhishekabhi789.mdnshelper.ui.screens
 
 import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -39,10 +39,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.druk.rx2dnssd.BonjourService
-import io.github.abhishekabhi789.mdnshelper.MdnsHelperViewModel
-import io.github.abhishekabhi789.mdnshelper.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.R
-import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager.BookMarkAction
+import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
+import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.ui.components.ServiceInfoItem
+import io.github.abhishekabhi789.mdnshelper.ui.components.UnReachableBookmarks
+import io.github.abhishekabhi789.mdnshelper.viewmodel.MdnsHelperViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)

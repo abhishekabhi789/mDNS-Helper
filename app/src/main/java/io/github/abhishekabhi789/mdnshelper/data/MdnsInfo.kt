@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper
+package io.github.abhishekabhi789.mdnshelper.data
 
 import com.github.druk.rx2dnssd.BonjourService
 

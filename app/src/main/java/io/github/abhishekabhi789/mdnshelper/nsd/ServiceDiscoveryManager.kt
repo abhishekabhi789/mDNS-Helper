@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper
+package io.github.abhishekabhi789.mdnshelper.nsd
 
 import android.content.Context
 import android.net.nsd.NsdManager
@@ -19,7 +19,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DnsSdHelper @Inject constructor(@ApplicationContext context: Context) {
+class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: Context) {
     private val nsdManager = context.getSystemService(Context.NSD_SERVICE) as NsdManager
     private var rxDnsSd = createDnsSd(context)
     private lateinit var browseDisposable: Disposable
@@ -138,7 +138,7 @@ class DnsSdHelper @Inject constructor(@ApplicationContext context: Context) {
     }
 
     companion object {
-        private const val TAG = "DnsSdHelper"
+        private const val TAG = "ServiceDiscoveryManager"
         private const val SERVICE_TYPE = "_services._dns-sd._udp"
     }
 }

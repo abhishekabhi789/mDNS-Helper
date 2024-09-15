@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.ui
+package io.github.abhishekabhi789.mdnshelper.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,8 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.abhishekabhi789.mdnshelper.MdnsInfo
-import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager.BookMarkAction
+import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.utils
+package io.github.abhishekabhi789.mdnshelper.bookmarks
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -8,8 +8,8 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.ui.graphics.vector.ImageVector
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.abhishekabhi789.mdnshelper.MdnsHelperViewModel
-import io.github.abhishekabhi789.mdnshelper.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.viewmodel.MdnsHelperViewModel
+import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

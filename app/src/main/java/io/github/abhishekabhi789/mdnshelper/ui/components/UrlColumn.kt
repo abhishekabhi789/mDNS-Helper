@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.ui
+package io.github.abhishekabhi789.mdnshelper.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize

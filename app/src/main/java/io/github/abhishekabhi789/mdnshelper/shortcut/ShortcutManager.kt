@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.utils
+package io.github.abhishekabhi789.mdnshelper.shortcut
 
 import android.content.Context
 import android.content.Intent
@@ -13,8 +13,9 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.R
+import io.github.abhishekabhi789.mdnshelper.utils.UrlUtils
 import javax.inject.Inject
 import javax.inject.Singleton
 

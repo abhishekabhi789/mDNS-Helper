@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper
+package io.github.abhishekabhi789.mdnshelper.ui.activities
 
 import android.os.Bundle
 import android.util.Log
@@ -10,7 +10,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.abhishekabhi789.mdnshelper.ui.AppMain
+import io.github.abhishekabhi789.mdnshelper.ui.screens.AppMain
+import io.github.abhishekabhi789.mdnshelper.viewmodel.MdnsHelperViewModel
 import io.github.abhishekabhi789.mdnshelper.ui.theme.MDNSHelperTheme
 
 @AndroidEntryPoint

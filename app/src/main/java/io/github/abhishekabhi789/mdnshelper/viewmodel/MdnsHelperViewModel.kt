@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper
+package io.github.abhishekabhi789.mdnshelper.viewmodel
 
 import android.os.Build
 import android.util.Log
@@ -7,8 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.druk.rx2dnssd.BonjourService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager
-import io.github.abhishekabhi789.mdnshelper.utils.ShortcutManager
+import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager
+import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.nsd.ServiceDiscoveryManager
+import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,7 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MdnsHelperViewModel @Inject constructor(
-    private val dnssdHelper: DnsSdHelper,
+    private val dnssdHelper: ServiceDiscoveryManager,
     private val bookmarkManager: BookmarkManager,
     private val shortcutManager: ShortcutManager?
 ) : ViewModel() {

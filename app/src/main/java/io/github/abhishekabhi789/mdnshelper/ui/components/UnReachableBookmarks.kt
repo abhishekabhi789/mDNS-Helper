@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.ui
+package io.github.abhishekabhi789.mdnshelper.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,8 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.abhishekabhi789.mdnshelper.MdnsInfo
-import io.github.abhishekabhi789.mdnshelper.utils.BookmarkManager.BookMarkAction
+import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
+import io.github.abhishekabhi789.mdnshelper.ui.screens.getDummyServiceInfo
 
 @Composable
 fun UnReachableBookmarks(
