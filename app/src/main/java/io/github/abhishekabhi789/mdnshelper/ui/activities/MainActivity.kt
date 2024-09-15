@@ -8,11 +8,14 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.mdnshelper.ui.screens.AppMain
-import io.github.abhishekabhi789.mdnshelper.viewmodel.MdnsHelperViewModel
 import io.github.abhishekabhi789.mdnshelper.ui.theme.MDNSHelperTheme
+import io.github.abhishekabhi789.mdnshelper.viewmodel.MdnsHelperViewModel
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -28,8 +31,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        lifecycleScope.launchWhenCreated {
-            viewModel.startServiceDiscovery()
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.startServiceDiscovery()
+            }
         }
     }
 
