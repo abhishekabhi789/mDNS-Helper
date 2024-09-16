@@ -21,8 +21,10 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -164,8 +166,16 @@ fun AppMain(viewModel: MdnsHelperViewModel = hiltViewModel()) {
                         val message = if (success) "Removed from bookmarks"
                         else "Failed to remove from bookmarks"
                         scope.launch {
-                            snackbarHostState.currentSnackbarData?.dismiss()
-                            snackbarHostState.showSnackbar(message)
+                            val snackbarResult = snackbarHostState.showSnackbar(
+                                message = message,
+                                actionLabel = "Undo",
+                                duration = SnackbarDuration.Short
+                            )
+                            when (snackbarResult) {
+                                SnackbarResult.Dismissed -> {}
+                                SnackbarResult.ActionPerformed ->
+                                    BookMarkAction.ADD.action.invoke(viewModel,bookmark,{})
+                            }
                         }
                     }
                     actionSuccess
