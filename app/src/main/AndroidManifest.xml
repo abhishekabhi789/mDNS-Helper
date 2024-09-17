@@ -28,7 +28,7 @@
             android:exported="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
             <intent-filter>
-                <action android:name="${shortcutActionName}" />
+                <action android:name="${ACTION_SHORTCUT_LAUNCH}" />
             </intent-filter>
         </activity>
     </application>

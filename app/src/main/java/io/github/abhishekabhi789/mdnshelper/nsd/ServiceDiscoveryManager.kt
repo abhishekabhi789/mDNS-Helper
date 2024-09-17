@@ -78,9 +78,9 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
         }
     }
 
-    fun resolveServiceWithInfos(regType: String, domain: String) {
+    fun resolveServiceWithInfos(regType: String, domain: String?) {
         try {
-            browseDisposable = rxDnsSd.browse(regType, domain)
+            browseDisposable = rxDnsSd.browse(regType, domain ?: "local.")
                 .compose(rxDnsSd.resolve())
                 .compose(rxDnsSd.queryIPRecords())
                 .subscribeOn(Schedulers.io())

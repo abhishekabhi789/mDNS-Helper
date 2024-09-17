@@ -1,7 +1,7 @@
 package io.github.abhishekabhi789.mdnshelper.viewmodel
 
+import android.content.Intent
 import android.os.Build
-import android.os.Bundle
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -41,12 +41,11 @@ class ShortcutHandleViewmodel @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun processShortcutAction(extras: Bundle) {
-        shortcutManager?.getShortcutInfoFromExtras(
-            extras,
-            onFound = { regType, regName ->
-                Log.d(TAG, "processShortcutAction: found info $regType $regName")
-                dnssdHelper.resolveServiceWithInfos(regType, regName)
+    fun processShortcutAction(intent: Intent) {
+        shortcutManager?.getShortcutInfoFromIntent(
+            intent,
+            onFound = { regType, _, domain ->
+                dnssdHelper.resolveServiceWithInfos(regType, domain)
             },
             onFailed = {
                 Log.e(TAG, "isServiceAvailable: failed to get shortcut info")

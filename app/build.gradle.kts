@@ -20,9 +20,14 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        val shortcutActionName = "$applicationId.LAUNCH_SHORTCUT"
-        manifestPlaceholders["shortcutActionName"] = shortcutActionName
-        buildConfigField("String", "SHORTCUT_ACTION_NAME", "\"$shortcutActionName\"")
+        val customIntentActions = mutableMapOf(
+            Pair("ACTION_SHORTCUT_LAUNCH", "$applicationId.action.LAUNCH_SHORTCUT"),
+            Pair("ACTION_SHORTCUT_ADDED_PINNED", "$applicationId.action.ADDED_PINNED_SHORTCUT")
+        )
+        manifestPlaceholders.putAll(customIntentActions)
+        customIntentActions.forEach {
+            buildConfigField("String", it.key, "\"${it.value}\"")
+        }
     }
 
     buildTypes {

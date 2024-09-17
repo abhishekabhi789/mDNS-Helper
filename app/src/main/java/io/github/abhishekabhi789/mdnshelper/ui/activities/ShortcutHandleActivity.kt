@@ -42,7 +42,7 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        intent.extras?.let { viewModel.processShortcutAction(it) }
+        viewModel.processShortcutAction(intent)
         lifecycleScope.launch {
             viewModel.currentAddress.collectLatest { value ->
                 if (value != null) {

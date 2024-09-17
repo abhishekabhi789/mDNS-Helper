@@ -1,6 +1,7 @@
 package io.github.abhishekabhi789.mdnshelper.ui.screens
 
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -42,9 +44,11 @@ import com.github.druk.rx2dnssd.BonjourService
 import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.ui.activities.MainActivity.Companion.TAG
 import io.github.abhishekabhi789.mdnshelper.ui.components.ServiceInfoItem
 import io.github.abhishekabhi789.mdnshelper.ui.components.UnReachableBookmarks
 import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -64,6 +68,13 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
     } else {
         Triple("Start Scan", Icons.Default.Search, viewModel::startServiceDiscovery)
     }
+    LaunchedEffect(key1 = true) {
+        viewModel.shortcutResult.collectLatest { regName ->
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar("Shortcut added for $regName")
+        }
+    }
+
     Scaffold(
         topBar = { TopBar(Modifier, scrollBehavior) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -129,12 +140,16 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                         },
                         onShortcutButtonClicked = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                viewModel.addPinnedShortcut(info = mdnsInfo) { success ->
-                                    scope.launch {
-                                        val message: String = if (success) "Shortcut added"
-                                        else "Failed to add shortcut"
+                                scope.launch {
+                                    if (!viewModel.isShortcutAdded(mdnsInfo)) {
+                                        viewModel.addPinnedShortcut(info = mdnsInfo)
+                                    } else {
                                         snackbarHostState.currentSnackbarData?.dismiss()
-                                        snackbarHostState.showSnackbar(message = message)
+                                        snackbarHostState.showSnackbar("Shortcut for ${mdnsInfo.getServiceName()} already added")
+                                        Log.i(
+                                            TAG,
+                                            "AppMain: shortcut already added for ${mdnsInfo.getServiceName()}"
+                                        )
                                     }
                                 }
                             }
