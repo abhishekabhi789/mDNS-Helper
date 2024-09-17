@@ -11,6 +11,8 @@ data class MdnsInfo(val bonjourService: BonjourService) {
 
     fun getServiceName(): String = bonjourService.serviceName
 
+    fun getDomain(): String? = bonjourService.domain
+
     fun getHostName(): String? = bonjourService.hostname
 
     fun getHostAddress(): String? = bonjourService.inet4Address?.hostAddress

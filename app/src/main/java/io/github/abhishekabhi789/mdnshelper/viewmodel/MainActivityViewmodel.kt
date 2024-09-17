@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.mdnshelper.viewmodel
 
+import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -11,19 +12,23 @@ import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.nsd.ServiceDiscoveryManager
 import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class MdnsHelperViewModel @Inject constructor(
+class MainActivityViewmodel @Inject constructor(
     private val dnssdHelper: ServiceDiscoveryManager,
     private val bookmarkManager: BookmarkManager,
     private val shortcutManager: ShortcutManager?
@@ -34,6 +39,9 @@ class MdnsHelperViewModel @Inject constructor(
 
     private val _availableServices = MutableStateFlow<List<MdnsInfo>>(emptyList())
     val availableServices: StateFlow<List<MdnsInfo>> = _availableServices.asStateFlow()
+
+    private val _shortcutResult = MutableSharedFlow<String>()
+    val shortcutResult = _shortcutResult.asSharedFlow()
 
     private val bookmarks = bookmarkManager.bookmarks
     val unavailableBookmarks: StateFlow<List<MdnsInfo>> =
@@ -117,9 +125,27 @@ class MdnsHelperViewModel @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun addPinnedShortcut(info: MdnsInfo, onComplete: (success: Boolean) -> Unit) {
+    fun addPinnedShortcut(info: MdnsInfo) {
         viewModelScope.launch {
-            shortcutManager?.addPinnedShortcut(info, onComplete)
+            shortcutManager?.addPinnedShortcut(info)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun isShortcutAdded(info: MdnsInfo): Boolean {
+        return withContext(Dispatchers.IO) {
+            shortcutManager?.isShortcutAdded(info) ?: false
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun shortcutAddedEvent(intent: Intent) {
+        viewModelScope.launch {
+            shortcutManager?.getShortcutInfoFromIntent(intent,
+                onFound = { _, regName, _ -> launch { _shortcutResult.emit(regName) } },
+                onFailed = {
+                    Log.e(TAG, "shortcutAddedEvent: failed to get shortcut info")
+                })
         }
     }
 

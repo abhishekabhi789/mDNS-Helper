@@ -20,6 +20,14 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        val customIntentActions = mutableMapOf(
+            Pair("ACTION_SHORTCUT_LAUNCH", "$applicationId.action.LAUNCH_SHORTCUT"),
+            Pair("ACTION_SHORTCUT_ADDED_PINNED", "$applicationId.action.ADDED_PINNED_SHORTCUT")
+        )
+        manifestPlaceholders.putAll(customIntentActions)
+        customIntentActions.forEach {
+            buildConfigField("String", it.key, "\"${it.value}\"")
+        }
     }
 
     buildTypes {
@@ -40,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"

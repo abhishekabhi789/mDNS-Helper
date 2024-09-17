@@ -14,7 +14,14 @@ object UrlUtils {
         context.startActivity(Intent(Intent.ACTION_SEND, Uri.parse(url)))
     }
 
-    fun addressAsUrl(url: String): String {
-        return "http://$url"
+    fun addressAsUrl(address: String): String {
+        return "http://$address"
+    }
+
+    fun openWithBrowser(context: Context, url: String) {
+        val parsedUri = Uri.parse(url)
+        val intent = Intent(Intent.ACTION_VIEW, parsedUri)
+        context.startActivity(intent)
+
     }
 }
