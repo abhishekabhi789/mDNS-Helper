@@ -1,7 +1,8 @@
 package io.github.abhishekabhi789.mdnshelper.ui.screens
 
-import android.os.Build
+import android.app.Activity
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,22 +34,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
+import com.canhub.cropper.CropImageView
 import com.github.druk.rx2dnssd.BonjourService
 import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.ui.activities.MainActivity.Companion.TAG
+import io.github.abhishekabhi789.mdnshelper.ui.components.AddShortcutDialog
 import io.github.abhishekabhi789.mdnshelper.ui.components.ServiceInfoItem
 import io.github.abhishekabhi789.mdnshelper.ui.components.UnReachableBookmarks
+import io.github.abhishekabhi789.mdnshelper.utils.ShortcutIconUtils
 import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -57,6 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current as Activity
     val snackbarHostState = remember { SnackbarHostState() }
     val discoveryRunning by viewModel.discoveryRunning.collectAsState()
     val availableServices by viewModel.availableServices.collectAsState()
@@ -70,6 +80,19 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
     } else {
         Triple("Start Scan", Icons.Default.Search, viewModel::startServiceDiscovery)
     }
+    var infoForShortcut: MdnsInfo? by remember { mutableStateOf(null) }
+    val imagePicker = rememberLauncherForActivityResult(CropImageContract()) { result ->
+        if (result.isSuccessful) {
+            result.uriContent?.let { uri ->
+                Log.d(TAG, "AppMain: uri generated $uri")
+                val bitmap = ShortcutIconUtils.getBitmapFromUri(context, uri)
+                ShortcutIconUtils.saveIcon(context, bitmap) {
+                    viewModel.refreshShortcutIconList(context)
+                }
+            }
+        } else Log.i(TAG, "AppMain: no image selected")
+    }
+
     LaunchedEffect(key1 = true) {
         viewModel.shortcutResult.collectLatest { regName ->
             snackbarHostState.currentSnackbarData?.dismiss()
@@ -141,18 +164,17 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                             actionSuccess
                         },
                         onShortcutButtonClicked = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                scope.launch {
-                                    if (!viewModel.isShortcutAdded(mdnsInfo)) {
-                                        viewModel.addPinnedShortcut(info = mdnsInfo)
-                                    } else {
-                                        snackbarHostState.currentSnackbarData?.dismiss()
-                                        snackbarHostState.showSnackbar("Shortcut for ${mdnsInfo.getServiceName()} already added")
-                                        Log.i(
-                                            TAG,
-                                            "AppMain: shortcut already added for ${mdnsInfo.getServiceName()}"
-                                        )
-                                    }
+                            scope.launch {
+                                if (!viewModel.isShortcutAdded(mdnsInfo)) {
+                                    Log.d(TAG, "AppMain: shortcut not added yet")
+                                    infoForShortcut = mdnsInfo
+                                } else {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar("Shortcut for ${mdnsInfo.getServiceName()} already added")
+                                    Log.i(
+                                        TAG,
+                                        "AppMain: shortcut already added for ${mdnsInfo.getServiceName()}"
+                                    )
                                 }
                             }
                         }
@@ -189,13 +211,33 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                             when (snackbarResult) {
                                 SnackbarResult.Dismissed -> {}
                                 SnackbarResult.ActionPerformed ->
-                                    BookMarkAction.ADD.action.invoke(viewModel,bookmark,{})
+                                    BookMarkAction.ADD.action.invoke(viewModel, bookmark, {})
                             }
                         }
                     }
                     actionSuccess
                 }
             }
+        }
+        infoForShortcut?.let {info->
+            AddShortcutDialog(
+                viewModel = viewModel,
+                info = info,
+                onDismiss = { infoForShortcut = null },
+                pickNewIcon = {
+                    val cropOptions = CropImageContractOptions(
+                        null,
+                        cropImageOptions = CropImageOptions(
+                            imageSourceIncludeCamera = false,
+                            fixAspectRatio = true,
+                            outputRequestWidth = 192,
+                            outputRequestHeight = 192,
+                            cropShape = CropImageView.CropShape.OVAL
+                        )
+                    )
+                    imagePicker.launch(cropOptions)
+                }
+            )
         }
     }
 }
@@ -208,12 +250,6 @@ fun TopBar(modifier: Modifier = Modifier, scrollBehavior: TopAppBarScrollBehavio
         scrollBehavior = scrollBehavior,
         modifier = modifier
     )
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun PreviewMDNSApp() {
-    AppMain()
 }
 
 fun getDummyServiceInfo(): MdnsInfo {

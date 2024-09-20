@@ -3,29 +3,24 @@ package io.github.abhishekabhi789.mdnshelper.shortcut
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.drawable.IconCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.abhishekabhi789.mdnshelper.BuildConfig
-import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.ui.activities.ShortcutHandleActivity
+import io.github.abhishekabhi789.mdnshelper.utils.ShortcutIconUtils
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Singleton
 class ShortcutManager @Inject constructor(@ApplicationContext private val context: Context) {
 
     private var pinnedShortcuts = mutableListOf<ShortcutInfoCompat>()
-
-    private val icon = IconCompat.createWithResource(context, R.mipmap.ic_launcher_round)
 
     init {
         refreshShortcutList()
@@ -42,8 +37,9 @@ class ShortcutManager @Inject constructor(@ApplicationContext private val contex
         )
     }
 
-    fun addPinnedShortcut(info: MdnsInfo) {
+    fun addPinnedShortcut(info: MdnsInfo, iconBitmap: Bitmap) {
         if (ShortcutManagerCompat.isRequestPinShortcutSupported(context)) {
+            val iconCompat = ShortcutIconUtils.convertBitmapToIconCompat(iconBitmap)
             val extras = PersistableBundle().apply {
                 putString(KEY_SERVICE_TYPE, info.getServiceType())
                 putString(KEY_SERVICE_NAME, info.getServiceName())
@@ -59,7 +55,7 @@ class ShortcutManager @Inject constructor(@ApplicationContext private val contex
                 val shortcut = ShortcutInfoCompat.Builder(context, shortcutId).apply {
                     setShortLabel(info.getServiceName().replaceFirstChar { it.uppercase() })
                     setLongLabel("${info.getHostName()} from ${info.getServiceType()} ${info.getServiceName()}")
-                    setIcon(icon)
+                    setIcon(iconCompat)
                     setExtras(extras)
                     setDisabledMessage("Failed to start shortcut, try recreating")
                     info.getHostAddress()?.let { setIntent(shortcutIntent) }

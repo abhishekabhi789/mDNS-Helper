@@ -1,7 +1,6 @@
 package io.github.abhishekabhi789.mdnshelper.di
 
 import android.content.Context
-import android.os.Build
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,9 +13,7 @@ import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
 object ShortcutHandleViewmodelModule {
 
     @Provides
-    fun getShortcutManager(@ActivityContext context: Context): ShortcutManager? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ShortcutManager(context)
-        } else null
+    fun getShortcutManager(@ActivityContext context: Context): ShortcutManager {
+        return ShortcutManager(context)
     }
 }

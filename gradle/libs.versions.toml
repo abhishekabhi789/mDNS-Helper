@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.2"
+androidImageCropper = "4.6.0"
 daggerHilt = "2.52"
 hiltNavigationCompose = "1.2.0"
 #noinspection GradleDependency
@@ -15,6 +16,7 @@ materialIconsExtended = "1.7.1"
 rx2dnssd = "0.9.17"
 
 [libraries]
+android-image-cropper = { module = "com.vanniktech:android-image-cropper", version.ref = "androidImageCropper" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "daggerHilt" }

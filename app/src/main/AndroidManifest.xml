@@ -31,6 +31,9 @@
                 <action android:name="${ACTION_SHORTCUT_LAUNCH}" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.canhub.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
     </application>
 
 </manifest>

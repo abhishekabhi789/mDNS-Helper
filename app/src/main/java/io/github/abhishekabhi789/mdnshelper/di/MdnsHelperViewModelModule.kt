@@ -1,8 +1,6 @@
 package io.github.abhishekabhi789.mdnshelper.di
 
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,11 +16,8 @@ object MdnsHelperViewModelModule {
     fun getServiceDiscoveryManager(@ActivityContext context: Context) =
         ServiceDiscoveryManager(context)
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @Provides
-    fun getShortcutManager(@ActivityContext context: Context): ShortcutManager? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ShortcutManager(context)
-        } else null
+    fun getShortcutManager(@ActivityContext context: Context): ShortcutManager {
+        return ShortcutManager(context)
     }
 }

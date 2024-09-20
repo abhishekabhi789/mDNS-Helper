@@ -4,13 +4,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -31,7 +29,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             MDNSHelperTheme {
                 Surface(Modifier.fillMaxSize()) {
@@ -42,6 +39,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
                 viewModel.startServiceDiscovery()
+                viewModel.refreshShortcutIconList(context = this@MainActivity)
             }
         }
     }
@@ -52,7 +50,6 @@ class MainActivity : ComponentActivity() {
         viewModel.stopServiceDiscovery()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "onStart: starting listener")
@@ -71,7 +68,6 @@ class MainActivity : ComponentActivity() {
     }
 
     inner class ShortcutAddedReceiver : BroadcastReceiver() {
-        @RequiresApi(Build.VERSION_CODES.O)
         override fun onReceive(context: Context, intent: Intent) {
             Log.i(TAG, "onReceive: ${intent.action}")
             if (intent.action == BuildConfig.ACTION_SHORTCUT_ADDED_PINNED) {

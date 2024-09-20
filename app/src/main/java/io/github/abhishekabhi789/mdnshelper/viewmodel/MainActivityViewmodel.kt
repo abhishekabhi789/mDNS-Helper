@@ -1,9 +1,9 @@
 package io.github.abhishekabhi789.mdnshelper.viewmodel
 
+import android.content.Context
 import android.content.Intent
-import android.os.Build
+import android.graphics.Bitmap
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.druk.rx2dnssd.BonjourService
@@ -12,6 +12,7 @@ import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.nsd.ServiceDiscoveryManager
 import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
+import io.github.abhishekabhi789.mdnshelper.utils.ShortcutIconUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,7 +34,6 @@ class MainActivityViewmodel @Inject constructor(
     private val bookmarkManager: BookmarkManager,
     private val shortcutManager: ShortcutManager?
 ) : ViewModel() {
-
     private val _discoveryRunning = MutableStateFlow(false)
     val discoveryRunning: StateFlow<Boolean> = _discoveryRunning.asStateFlow()
 
@@ -43,7 +43,11 @@ class MainActivityViewmodel @Inject constructor(
     private val _shortcutResult = MutableSharedFlow<String>()
     val shortcutResult = _shortcutResult.asSharedFlow()
 
+    private val _shortcutIcons = MutableStateFlow<List<Bitmap>>(emptyList())
+    val shortcutIcons = _shortcutIcons.asStateFlow()
+
     private val bookmarks = bookmarkManager.bookmarks
+
     val unavailableBookmarks: StateFlow<List<MdnsInfo>> =
         combine(_availableServices, bookmarks) { availableServices, bookmarks ->
             bookmarks.toMutableSet().filter { bookmark ->
@@ -124,21 +128,18 @@ class MainActivityViewmodel @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun addPinnedShortcut(info: MdnsInfo) {
+    fun addPinnedShortcut(info: MdnsInfo, iconBitmap: Bitmap) {
         viewModelScope.launch {
-            shortcutManager?.addPinnedShortcut(info)
+            shortcutManager?.addPinnedShortcut(info, iconBitmap)
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun isShortcutAdded(info: MdnsInfo): Boolean {
         return withContext(Dispatchers.IO) {
             shortcutManager?.isShortcutAdded(info) ?: false
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun shortcutAddedEvent(intent: Intent) {
         viewModelScope.launch {
             shortcutManager?.getShortcutInfoFromIntent(intent,
@@ -158,6 +159,17 @@ class MainActivityViewmodel @Inject constructor(
             "local."
         ).build()
         return MdnsInfo(bonjourService)
+    }
+
+    fun refreshShortcutIconList(context: Context) {
+        viewModelScope.launch {
+            _shortcutIcons.update {
+                ShortcutIconUtils.getSavedIcons(context).also {
+                    Log.d(TAG, "refreshShortcutIconList: ${it.size}")
+                }
+
+            }
+        }
     }
 
     companion object {

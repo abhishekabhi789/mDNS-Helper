@@ -1,13 +1,11 @@
 package io.github.abhishekabhi789.mdnshelper.ui.activities
 
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,7 +37,6 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
     private val viewModel: ShortcutHandleViewmodel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.processShortcutAction(intent)

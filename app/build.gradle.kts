@@ -83,6 +83,8 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     //dnsssd
     implementation(libs.rx2dnssd)
+    //crop images for icon
+    implementation(libs.android.image.cropper)
 }
 kapt {
     correctErrorTypes = true

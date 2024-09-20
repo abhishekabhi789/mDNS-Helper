@@ -1,9 +1,7 @@
 package io.github.abhishekabhi789.mdnshelper.viewmodel
 
 import android.content.Intent
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,7 +38,6 @@ class ShortcutHandleViewmodel @Inject constructor(
         dnssdHelper.onError = { errorMsg -> sendErrorMessage(errorMsg) }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun processShortcutAction(intent: Intent) {
         shortcutManager?.getShortcutInfoFromIntent(
             intent,
