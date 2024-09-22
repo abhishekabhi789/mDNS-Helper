@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt")
     alias(libs.plugins.dagger.hilt.android)
+    id("com.google.android.gms.oss-licenses-plugin")
 }
 
 android {
@@ -69,7 +70,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.material.icons.extended)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -85,6 +85,10 @@ dependencies {
     implementation(libs.rx2dnssd)
     //crop images for icon
     implementation(libs.android.image.cropper)
+    //material icons extended
+    implementation(libs.androidx.material.icons.extended)
+    //liceses
+    implementation(libs.play.services.oss.licenses)
 }
 kapt {
     correctErrorTypes = true

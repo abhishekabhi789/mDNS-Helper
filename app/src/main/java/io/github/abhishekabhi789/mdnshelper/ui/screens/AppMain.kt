@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,7 +28,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.canhub.cropper.CropImageContract
@@ -50,12 +47,12 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
 import com.github.druk.rx2dnssd.BonjourService
-import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.ui.activities.MainActivity.Companion.TAG
 import io.github.abhishekabhi789.mdnshelper.ui.components.AddShortcutDialog
 import io.github.abhishekabhi789.mdnshelper.ui.components.ServiceInfoItem
+import io.github.abhishekabhi789.mdnshelper.ui.components.TopBar
 import io.github.abhishekabhi789.mdnshelper.ui.components.UnReachableBookmarks
 import io.github.abhishekabhi789.mdnshelper.utils.ShortcutIconUtils
 import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
@@ -240,16 +237,6 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
             )
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TopBar(modifier: Modifier = Modifier, scrollBehavior: TopAppBarScrollBehavior) {
-    LargeTopAppBar(
-        title = { Text(text = stringResource(id = R.string.app_name)) },
-        scrollBehavior = scrollBehavior,
-        modifier = modifier
-    )
 }
 
 fun getDummyServiceInfo(): MdnsInfo {
