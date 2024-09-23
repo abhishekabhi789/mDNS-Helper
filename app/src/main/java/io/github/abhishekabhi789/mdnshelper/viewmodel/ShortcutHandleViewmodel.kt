@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.mdnshelper.nsd.ServiceDiscoveryManager
 import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -39,15 +40,24 @@ class ShortcutHandleViewmodel @Inject constructor(
     }
 
     fun processShortcutAction(intent: Intent) {
-        shortcutManager?.getShortcutInfoFromIntent(
-            intent,
-            onFound = { regType, _, domain ->
-                dnssdHelper.resolveServiceWithInfos(regType, domain)
-            },
-            onFailed = {
-                Log.e(TAG, "isServiceAvailable: failed to get shortcut info")
-                sendErrorMessage("Failed to retrieve shortcut info")
-            })
+        viewModelScope.launch {
+            launch {
+                shortcutManager?.getShortcutInfoFromIntent(
+                    intent,
+                    onFound = { regType, _, domain ->
+                        dnssdHelper.resolveServiceWithInfos(regType, domain)
+                    },
+                    onFailed = {
+                        Log.e(TAG, "isServiceAvailable: failed to get shortcut info")
+                        sendErrorMessage("Failed to retrieve shortcut info")
+                    })
+            }
+            launch {
+                delay(TIMEOUT)
+                Log.e(TAG, "processShortcutAction: timeout")
+                sendErrorMessage("Failed to find service.")
+            }
+        }
     }
 
     private fun sendErrorMessage(errMsg: String) {
@@ -64,5 +74,6 @@ class ShortcutHandleViewmodel @Inject constructor(
 
     companion object {
         private const val TAG = "ShortcutHandleViewmodel"
+        private const val TIMEOUT = 15_000L
     }
 }
