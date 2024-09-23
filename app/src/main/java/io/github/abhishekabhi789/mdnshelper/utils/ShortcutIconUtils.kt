@@ -58,7 +58,9 @@ object ShortcutIconUtils {
     }
 
     fun getSavedIcons(context: Context): List<Bitmap> {
-        val files = File(context.getExternalFilesDir(null), SUB_DIR_NAME).listFiles()
+        val files =  File(context.getExternalFilesDir(null), SUB_DIR_NAME)
+            .listFiles()
+            ?.sortedByDescending { it.name }
         val icons = files?.filter { file -> file.extension in listOf("png", "jpg", "jpeg") }
         val bitmaps = icons?.mapNotNull { BitmapFactory.decodeFile(it.path) }
         return bitmaps ?: emptyList()
