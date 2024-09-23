@@ -25,6 +25,9 @@ class ShortcutHandleViewmodel @Inject constructor(
     val currentAddress = _currentAddress.asStateFlow()
     private val _errorMessage = MutableSharedFlow<String>()
     val errorMessage = _errorMessage.asSharedFlow()
+    private val _resolvingProgress = MutableStateFlow(0f)
+    var resolvingProgress = _resolvingProgress.asStateFlow()
+    private var isResolverRunning = false
 
     init {
         dnssdHelper.onServiceFoundCallback = { bonjourService ->
@@ -37,10 +40,14 @@ class ShortcutHandleViewmodel @Inject constructor(
             sendErrorMessage("Service $serviceName lost")
         }
         dnssdHelper.onError = { errorMsg -> sendErrorMessage(errorMsg) }
+        dnssdHelper.isDiscoveryRunning = { isRunning ->
+            isResolverRunning = isRunning
+        }
     }
 
     fun processShortcutAction(intent: Intent) {
         viewModelScope.launch {
+            updateProgress(0f)
             launch {
                 shortcutManager?.getShortcutInfoFromIntent(
                     intent,
@@ -53,7 +60,12 @@ class ShortcutHandleViewmodel @Inject constructor(
                     })
             }
             launch {
-                delay(TIMEOUT)
+                val endTime = System.currentTimeMillis() + TIMEOUT
+                while (System.currentTimeMillis() < endTime) {
+                    val progress = 1f - ((endTime - System.currentTimeMillis()) / TIMEOUT.toFloat())
+                    updateProgress(progress)
+                    delay(50)
+                }
                 Log.e(TAG, "processShortcutAction: timeout")
                 sendErrorMessage("Failed to find service.")
             }
@@ -63,6 +75,12 @@ class ShortcutHandleViewmodel @Inject constructor(
     private fun sendErrorMessage(errMsg: String) {
         viewModelScope.launch {
             _errorMessage.emit(errMsg)
+        }
+    }
+
+    private fun updateProgress(progress: Float) {
+        viewModelScope.launch {
+            _resolvingProgress.update { progress.coerceIn(0f, 1.0f) }
         }
     }
 
