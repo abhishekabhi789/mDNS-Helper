@@ -57,13 +57,28 @@ object ShortcutIconUtils {
         }
     }
 
-    fun getSavedIcons(context: Context): List<Bitmap> {
-        val files =  File(context.getExternalFilesDir(null), SUB_DIR_NAME)
+    fun getSavedIcons(context: Context): Map<Bitmap, String> {
+        val filesDir = context.getExternalFilesDir(null) ?: return emptyMap()
+        val iconFiles = File(filesDir, SUB_DIR_NAME)
             .listFiles()
+            ?.filter { file -> file.extension in listOf("png", "jpg", "jpeg") }
             ?.sortedByDescending { it.name }
-        val icons = files?.filter { file -> file.extension in listOf("png", "jpg", "jpeg") }
-        val bitmaps = icons?.mapNotNull { BitmapFactory.decodeFile(it.path) }
-        return bitmaps ?: emptyList()
+        return iconFiles?.associate { file -> BitmapFactory.decodeFile(file.path) to file.name }
+            ?: emptyMap()
+    }
+
+    fun deleteIcon(context: Context, fileName: String, onComplete: (success: Boolean) -> Unit) {
+        val filesDir = context.getExternalFilesDir(null)
+        val iconFiles = File(filesDir, SUB_DIR_NAME).listFiles()
+        val matches = iconFiles?.filter { it.name == fileName }
+        matches?.forEach { file ->
+            try {
+                onComplete(file.delete())
+            } catch (e: Exception) {
+                Log.e(TAG, "deleteIcon: failed to delete", e)
+                onComplete(false)
+            }
+        }
     }
 
     fun getBitmapFromUri(context: Context, uri: Uri): Bitmap {

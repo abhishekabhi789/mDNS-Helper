@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,16 +20,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +67,15 @@ fun AddShortcutDialog(
     val context = LocalContext.current as Activity
     val cardDefaults = CardDefaults
     val shortcutIconList by viewModel.shortcutIcons.collectAsState()
+    var isIconDeletionMode by remember { mutableStateOf(false) }
+    val deleteButton by remember {
+        derivedStateOf {
+            Icons.Default.let { icons ->
+                if (isIconDeletionMode && shortcutIconList.isNotEmpty()) Pair(icons.Done, "Done")
+                else Pair(icons.Delete, "Delete")
+            }
+        }
+    }
 
     BasicAlertDialog(
         onDismissRequest = onDismiss,
@@ -72,7 +90,6 @@ fun AddShortcutDialog(
                 )
         }
 
-
         var selectedIconBitmap: Bitmap by remember { mutableStateOf(defaultIcon) }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -84,7 +101,22 @@ fun AddShortcutDialog(
                 text = "Would you like to create a home screen shortcut for ${info.getServiceName()}?",
                 style = MaterialTheme.typography.bodyMedium
             )
-            Text(text = "Choose an icon", modifier = Modifier.align(Alignment.Start))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Choose an icon")
+                Spacer(modifier = Modifier.weight(1f))
+                if (shortcutIconList.isNotEmpty()) {
+                    IconButton(onClick = { isIconDeletionMode = !isIconDeletionMode }) {
+                        Icon(
+                            imageVector = deleteButton.first,
+                            contentDescription = deleteButton.second,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -96,25 +128,31 @@ fun AddShortcutDialog(
                             ?.toBitmap(config = Bitmap.Config.ARGB_8888)
                     }
                     addIcon?.let {
-                        ShortcutIcon(bitmap = it, isSelected = false) {
-                            pickNewIcon()
-                        }
+                        ShortcutIcon(bitmap = it, isSelected = false, onClick = { pickNewIcon() })
                     }
                 }
                 defaultIcon.let { bitmap ->
                     item {
-                        ShortcutIcon(bitmap = bitmap, isSelected = bitmap == selectedIconBitmap) {
-                            selectedIconBitmap = bitmap
-                        }
+                        ShortcutIcon(bitmap = bitmap,
+                            isSelected = bitmap == selectedIconBitmap,
+                            onClick = { selectedIconBitmap = bitmap }
+                        )
                     }
                 }
                 items(shortcutIconList) { iconBitmap ->
                     ShortcutIcon(
+                        modifier = Modifier,
                         bitmap = iconBitmap,
-                        isSelected = selectedIconBitmap == iconBitmap
-                    ) {
-                        selectedIconBitmap = iconBitmap
-                    }
+                        isSelected = selectedIconBitmap == iconBitmap,
+                        isDeletionMode = isIconDeletionMode,
+                        onClick = {
+                            if (isIconDeletionMode) {
+                                viewModel.deleteIcon(context, iconBitmap)
+                            } else {
+                                selectedIconBitmap = iconBitmap
+                            }
+                        }
+                    )
                 }
             }
 
@@ -139,7 +177,8 @@ fun ShortcutIcon(
     modifier: Modifier = Modifier,
     bitmap: Bitmap,
     isSelected: Boolean,
-    onClick: () -> Unit
+    isDeletionMode: Boolean = false,
+    onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(8.dp)
     val selectedModifier: Modifier =
@@ -147,16 +186,25 @@ fun ShortcutIcon(
             .border(2.dp, MaterialTheme.colorScheme.onPrimaryContainer, shape)
             .border(6.dp, Color.Transparent, shape)
         else Modifier
-    Image(
-        bitmap = bitmap.asImageBitmap(),
-        contentDescription = null,
-        modifier = modifier
-            .size(64.dp)
-            .aspectRatio(1f)
-            .then(selectedModifier)
-            .padding(6.dp)
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.primary, shape)
-            .clickable { onClick() }
-    )
+    Box(modifier = modifier) {
+        Image(
+            bitmap = bitmap.asImageBitmap(),
+            contentDescription = null,
+            modifier = Modifier
+                .size(64.dp)
+                .aspectRatio(1f)
+                .then(selectedModifier)
+                .padding(6.dp)
+                .clip(shape)
+                .background(MaterialTheme.colorScheme.primary, shape)
+                .clickable { onClick() }
+        )
+        if (isDeletionMode) Icon(
+            imageVector = Icons.Default.Remove,
+            contentDescription = "Delete icon",
+            modifier = Modifier
+                .background(Color.Red, CircleShape)
+                .align(Alignment.TopEnd)
+        )
+    }
 }

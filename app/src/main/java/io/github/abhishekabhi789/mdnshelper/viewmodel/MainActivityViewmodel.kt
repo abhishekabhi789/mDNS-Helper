@@ -47,6 +47,7 @@ class MainActivityViewmodel @Inject constructor(
     val shortcutIcons = _shortcutIcons.asStateFlow()
 
     private val bookmarks = bookmarkManager.bookmarks
+    private var shortcutIconMap = emptyMap<Bitmap, String>()
 
     val unavailableBookmarks: StateFlow<List<MdnsInfo>> =
         combine(_availableServices, bookmarks) { availableServices, bookmarks ->
@@ -164,10 +165,21 @@ class MainActivityViewmodel @Inject constructor(
     fun refreshShortcutIconList(context: Context) {
         viewModelScope.launch {
             _shortcutIcons.update {
-                ShortcutIconUtils.getSavedIcons(context).also {
-                    Log.d(TAG, "refreshShortcutIconList: ${it.size}")
-                }
+                val iconsMap = ShortcutIconUtils.getSavedIcons(context)
+                Log.d(TAG, "refreshShortcutIconList: ${it.size}")
+                shortcutIconMap = iconsMap
+                iconsMap.keys.toList()
+            }
+        }
+    }
 
+    fun deleteIcon(context: Context, bitmap: Bitmap) {
+        viewModelScope.launch {
+            val fileName = shortcutIconMap[bitmap]
+            fileName?.let {
+                ShortcutIconUtils.deleteIcon(
+                    context, fileName,
+                    onComplete = { refreshShortcutIconList(context) })
             }
         }
     }
