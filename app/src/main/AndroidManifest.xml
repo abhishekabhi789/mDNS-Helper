@@ -48,5 +48,11 @@
             android:name="com.google.android.gms.oss.licenses.OssLicensesActivity"
             android:theme="@style/Theme.AppCompat.DayNight" />
     </application>
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
 
 </manifest>

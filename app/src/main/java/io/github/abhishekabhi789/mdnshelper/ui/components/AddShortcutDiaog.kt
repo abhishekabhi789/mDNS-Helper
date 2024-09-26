@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -29,10 +31,15 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,13 +53,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import io.github.abhishekabhi789.mdnshelper.R
+import io.github.abhishekabhi789.mdnshelper.data.BrowserChoice
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.utils.UrlUtils
 import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -67,6 +79,9 @@ fun AddShortcutDialog(
     val context = LocalContext.current as Activity
     val cardDefaults = CardDefaults
     val shortcutIconList by viewModel.shortcutIcons.collectAsState()
+    var preferredBrowser: BrowserChoice by remember { mutableStateOf(BrowserChoice.Default) }
+    val browsersAvailable: List<BrowserChoice.InstalledBrowser> =
+        remember { UrlUtils.getBrowsers(context) }
     var isIconDeletionMode by remember { mutableStateOf(false) }
     val deleteButton by remember {
         derivedStateOf {
@@ -99,13 +114,13 @@ fun AddShortcutDialog(
             Text("Add shortcut", style = MaterialTheme.typography.titleLarge)
             Text(
                 text = "Would you like to create a home screen shortcut for ${info.getServiceName()}?",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodySmall
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Choose an icon")
+                Text(text = "Choose an icon", style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.weight(1f))
                 if (shortcutIconList.isNotEmpty()) {
                     IconButton(onClick = { isIconDeletionMode = !isIconDeletionMode }) {
@@ -155,6 +170,69 @@ fun AddShortcutDialog(
                     )
                 }
             }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                var dropDownExpanded by remember { mutableStateOf(false) }
+
+                Text(text = "Preferred Browser", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.weight(1f))
+                ExposedDropdownMenuBox(
+                    expanded = dropDownExpanded,
+                    onExpandedChange = { dropDownExpanded = it }) {
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                    ) {
+                        Text(
+                            text = preferredBrowser.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.End
+                        )
+                        Spacer(modifier = Modifier.padding(4.dp))
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropDownExpanded)
+                    }
+                    ExposedDropdownMenu(
+                        expanded = dropDownExpanded,
+                        onDismissRequest = { dropDownExpanded = false },
+                        modifier = Modifier.width(IntrinsicSize.Max)
+                    ) {
+                        listOf(BrowserChoice.Default, BrowserChoice.AskUser).forEach { browser ->
+                            DropdownMenuItem(
+                                text = { Text(text = browser.name) },
+                                onClick = {
+                                    preferredBrowser = browser
+                                    dropDownExpanded = false
+                                })
+                        }
+                        browsersAvailable.forEach { browser ->
+                            DropdownMenuItem(
+                                text = { Text(text = browser.name) },
+                                leadingIcon = {
+                                    Image(
+                                        bitmap = browser.appIcon.asImageBitmap(),
+                                        contentDescription = null,
+                                        colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
+                                            setToSaturation(0f)
+                                        }),
+                                        modifier = Modifier
+                                            .align(Alignment.CenterHorizontally)
+                                            .size(InputChipDefaults.IconSize)
+                                    )
+                                },
+                                onClick = {
+                                    preferredBrowser = browser
+                                    dropDownExpanded = false
+                                },
+                            )
+                        }
+                    }
+                }
+            }
 
             Row {
                 OutlinedButton(onClick = onDismiss) {
@@ -162,7 +240,7 @@ fun AddShortcutDialog(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(onClick = {
-                    viewModel.addPinnedShortcut(info, selectedIconBitmap)
+                    viewModel.addPinnedShortcut(info, selectedIconBitmap, preferredBrowser)
                     onDismiss()
                 }) {
                     Text(text = "Create shortcut")

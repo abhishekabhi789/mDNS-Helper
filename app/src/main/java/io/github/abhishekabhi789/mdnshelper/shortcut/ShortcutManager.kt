@@ -11,6 +11,7 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.abhishekabhi789.mdnshelper.BuildConfig
+import io.github.abhishekabhi789.mdnshelper.data.BrowserChoice
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.ui.activities.ShortcutHandleActivity
 import io.github.abhishekabhi789.mdnshelper.utils.ShortcutIconUtils
@@ -37,13 +38,14 @@ class ShortcutManager @Inject constructor(@ApplicationContext private val contex
         )
     }
 
-    fun addPinnedShortcut(info: MdnsInfo, iconBitmap: Bitmap) {
+    fun addPinnedShortcut(info: MdnsInfo, iconBitmap: Bitmap, preferredBrowser: BrowserChoice) {
         if (ShortcutManagerCompat.isRequestPinShortcutSupported(context)) {
             val iconCompat = ShortcutIconUtils.convertBitmapToIconCompat(iconBitmap)
             val extras = PersistableBundle().apply {
                 putString(KEY_SERVICE_TYPE, info.getServiceType())
                 putString(KEY_SERVICE_NAME, info.getServiceName())
                 putString(KEY_SERVICE_DOMAIN, info.getDomain())
+                putString(KEY_PREFERRED_BROWSER, preferredBrowser.packageName)
             }
             try {
                 val shortcutIntent = Intent(context, ShortcutHandleActivity::class.java).apply {
@@ -142,5 +144,6 @@ class ShortcutManager @Inject constructor(@ApplicationContext private val contex
         private const val KEY_SERVICE_TYPE = "service_type"
         private const val KEY_SERVICE_NAME = "service_name"
         private const val KEY_SERVICE_DOMAIN = "service_domain"
+        const val KEY_PREFERRED_BROWSER = "preferred_browser"
     }
 }

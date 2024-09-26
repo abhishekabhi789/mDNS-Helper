@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.druk.rx2dnssd.BonjourService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager
+import io.github.abhishekabhi789.mdnshelper.data.BrowserChoice
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.nsd.ServiceDiscoveryManager
 import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
@@ -129,9 +130,9 @@ class MainActivityViewmodel @Inject constructor(
         }
     }
 
-    fun addPinnedShortcut(info: MdnsInfo, iconBitmap: Bitmap) {
+    fun addPinnedShortcut(info: MdnsInfo, iconBitmap: Bitmap, preferredBrowser: BrowserChoice) {
         viewModelScope.launch {
-            shortcutManager?.addPinnedShortcut(info, iconBitmap)
+            shortcutManager?.addPinnedShortcut(info, iconBitmap, preferredBrowser)
         }
     }
 

@@ -2,6 +2,7 @@ package io.github.abhishekabhi789.mdnshelper.viewmodel
 
 import android.content.Intent
 import android.util.Log
+import androidx.annotation.FloatRange
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,6 +34,7 @@ class ShortcutHandleViewmodel @Inject constructor(
         dnssdHelper.onServiceFoundCallback = { bonjourService ->
             val address = bonjourService.inet4Address?.hostAddress
             Log.i(TAG, "onServiceFoundCallback: address: $address")
+            _resolvingProgress.update { 1.0f }
             _currentAddress.update { address }
         }
         dnssdHelper.onServiceLostCallback = { serviceName ->
@@ -61,13 +63,15 @@ class ShortcutHandleViewmodel @Inject constructor(
             }
             launch {
                 val endTime = System.currentTimeMillis() + TIMEOUT
-                while (System.currentTimeMillis() < endTime) {
+                while (System.currentTimeMillis() < endTime && _currentAddress.value.isNullOrEmpty()) {
                     val progress = 1f - ((endTime - System.currentTimeMillis()) / TIMEOUT.toFloat())
                     updateProgress(progress)
                     delay(50)
                 }
-                Log.e(TAG, "processShortcutAction: timeout")
-                sendErrorMessage("Failed to find service.")
+                if (_currentAddress.value.isNullOrEmpty()) {
+                    Log.e(TAG, "processShortcutAction: timeout")
+                    sendErrorMessage("Failed to find service.")
+                }
             }
         }
     }
@@ -78,7 +82,7 @@ class ShortcutHandleViewmodel @Inject constructor(
         }
     }
 
-    private fun updateProgress(progress: Float) {
+    private fun updateProgress(@FloatRange(from = 0.0, to = 1.0) progress: Float) {
         viewModelScope.launch {
             _resolvingProgress.update { progress.coerceIn(0f, 1.0f) }
         }

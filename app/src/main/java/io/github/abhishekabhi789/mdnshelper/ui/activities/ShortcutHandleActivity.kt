@@ -6,9 +6,11 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,15 +21,20 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.abhishekabhi789.mdnshelper.R
+import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
 import io.github.abhishekabhi789.mdnshelper.ui.theme.MDNSHelperTheme
 import io.github.abhishekabhi789.mdnshelper.utils.UrlUtils
 import io.github.abhishekabhi789.mdnshelper.viewmodel.ShortcutHandleViewmodel
@@ -45,11 +52,8 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
         super.onCreate(savedInstanceState)
         viewModel.processShortcutAction(intent)
         lifecycleScope.launch {
-            viewModel.currentAddress.collectLatest { value ->
-                if (value != null) {
-                    val url = UrlUtils.addressAsUrl(value)
-                    UrlUtils.openWithBrowser(context = this@ShortcutHandleActivity, url)
-                }
+            viewModel.currentAddress.collectLatest { address ->
+                openUrl(address)
             }
         }
         lifecycleScope.launch {
@@ -64,6 +68,7 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
         }
         setContent {
             val scannerProgress: Float by viewModel.resolvingProgress.collectAsState()
+            val address by viewModel.currentAddress.collectAsState()
             MDNSHelperTheme {
                 Surface {
                     CardDefaults.let { card ->
@@ -75,24 +80,58 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
                             Column(
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(16.dp)
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .animateContentSize()
                             ) {
-                                CircularProgressIndicator()
-                                Spacer(modifier = Modifier.height(12.dp))
-                                LinearProgressIndicator(
-                                    progress = { scannerProgress },
-                                    modifier = Modifier.fillMaxWidth()
+                                Text(
+                                    text = stringResource(id = R.string.app_name),
+                                    style = MaterialTheme.typography.titleMedium
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(text = "Resolving device address")
-                                Button(onClick = { finish() }) {
-                                    Text(text = "Cancel")
+                                if (address.isNullOrEmpty()) {
+                                    CircularProgressIndicator()
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    LinearProgressIndicator(
+                                        progress = { scannerProgress },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(text = "Resolving device address")
+                                } else {
+                                    Text(text = "Address $address")
+
+                                }
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(
+                                        8.dp, Alignment.CenterHorizontally
+                                    ), modifier = Modifier.animateContentSize()
+                                ) {
+                                    if (!address.isNullOrEmpty()) {
+                                        Button(onClick = { openUrl(address) }) {
+                                            Text(text = "Browse URL")
+                                        }
+                                    }
+                                    OutlinedButton(onClick = { finish() }) {
+                                        Text(text = "Cancel")
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    private fun openUrl(address: String?) {
+        if (!address.isNullOrEmpty()) {
+            val url = UrlUtils.addressAsUrl(address)
+            val chosenBrowser = intent.getStringExtra(ShortcutManager.KEY_PREFERRED_BROWSER)
+            UrlUtils.openWithBrowser(
+                context = this@ShortcutHandleActivity,
+                url,
+                chosenBrowser
+            )
         }
     }
 
