@@ -120,7 +120,7 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
                                             Text(text = "Browse URL")
                                         }
                                     }
-                                    OutlinedButton(onClick = { finish() }) {
+                                    OutlinedButton(onClick = { stopActivity() }) {
                                         Text(text = "Cancel")
                                     }
                                 }
@@ -138,12 +138,13 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
             val chosenBrowser = intent.getStringExtra(ShortcutManager.KEY_PREFERRED_BROWSER)
             if (chosenBrowser == BrowserChoice.CustomTab.packageName) {
                 openWithCustomTab(this, Uri.parse(url))
-            } else
+            } else {
                 UrlUtils.openWithBrowser(
                     context = this@ShortcutHandleActivity,
                     url,
                     chosenBrowser,
                 )
+            }
         }
     }
 
@@ -181,6 +182,10 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
     override fun onRestart() {
         super.onRestart()
         Log.d(TAG, "onResume: closing activity")
+        stopActivity()
+    }
+
+    private fun stopActivity() {
         customTabConnection?.let {
             Log.i(TAG, "onRestart: disconnecting customTab")
             unbindService(it)
