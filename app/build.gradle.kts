@@ -87,6 +87,8 @@ dependencies {
     implementation(libs.android.image.cropper)
     //material icons extended
     implementation(libs.androidx.material.icons.extended)
+    //custom tab
+    implementation(libs.androidx.browser)
     //liceses
     implementation(libs.play.services.oss.licenses)
 }

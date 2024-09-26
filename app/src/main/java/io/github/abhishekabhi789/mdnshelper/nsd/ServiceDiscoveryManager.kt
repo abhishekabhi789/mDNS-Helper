@@ -135,6 +135,8 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
         try {
             nsdManager.stopServiceDiscovery(discoveryListener)
             multicastLock.release()
+        } catch (e: IllegalArgumentException) {
+            Log.i(TAG, "stopServiceDiscovery: found listener wasn't attached")
         } catch (e: Exception) {
             e.printStackTrace()
         }

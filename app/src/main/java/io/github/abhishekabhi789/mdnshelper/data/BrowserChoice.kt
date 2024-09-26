@@ -16,6 +16,11 @@ sealed class BrowserChoice {
         override val packageName = "askUser"
     }
 
+    data object CustomTab : BrowserChoice() {
+        override val name = "Custom Tab"
+        override val packageName = "customTab"
+    }
+
     data class InstalledBrowser(
         override val name: String,
         val appIcon: Bitmap,

@@ -16,6 +16,7 @@ materialIconsExtended = "1.7.1"
 rx2dnssd = "0.9.17"
 ossLicensesPlugin = "0.10.6"
 playServicesOssLicenses = "17.1.0"
+browser = "1.8.0"
 
 [libraries]
 android-image-cropper = { module = "com.vanniktech:android-image-cropper", version.ref = "androidImageCropper" }
@@ -40,6 +41,7 @@ androidx-material-icons-extended = { group = "androidx.compose.material", name =
 oss-licenses-plugin = { module = "com.google.android.gms:oss-licenses-plugin", version.ref = "ossLicensesPlugin" }
 rx2dnssd = { module = "com.github.andriydruk:rx2dnssd", version.ref = "rx2dnssd" }
 play-services-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
+androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -201,7 +201,11 @@ fun AddShortcutDialog(
                         onDismissRequest = { dropDownExpanded = false },
                         modifier = Modifier.width(IntrinsicSize.Max)
                     ) {
-                        listOf(BrowserChoice.Default, BrowserChoice.AskUser).forEach { browser ->
+                        listOf(
+                            BrowserChoice.Default,
+                            BrowserChoice.AskUser,
+                            BrowserChoice.CustomTab
+                        ).forEach { browser ->
                             DropdownMenuItem(
                                 text = { Text(text = browser.name) },
                                 onClick = {
