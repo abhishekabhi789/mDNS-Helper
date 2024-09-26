@@ -12,6 +12,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -57,7 +58,9 @@ class MainActivity : ComponentActivity() {
             shortcutAddedReceiver = ShortcutAddedReceiver()
         }
         val intentFilter = IntentFilter(BuildConfig.ACTION_SHORTCUT_ADDED_PINNED)
-        registerReceiver(shortcutAddedReceiver, intentFilter, RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(
+            this, shortcutAddedReceiver, intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     override fun onStop() {

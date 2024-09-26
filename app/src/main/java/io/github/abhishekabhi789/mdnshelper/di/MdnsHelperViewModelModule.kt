@@ -13,8 +13,9 @@ import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
 @Module
 object MdnsHelperViewModelModule {
     @Provides
-    fun getServiceDiscoveryManager(@ActivityContext context: Context) =
-        ServiceDiscoveryManager(context)
+    fun getServiceDiscoveryManager(@ActivityContext context: Context): ServiceDiscoveryManager {
+        return ServiceDiscoveryManager(context)
+    }
 
     @Provides
     fun getShortcutManager(@ActivityContext context: Context): ShortcutManager {

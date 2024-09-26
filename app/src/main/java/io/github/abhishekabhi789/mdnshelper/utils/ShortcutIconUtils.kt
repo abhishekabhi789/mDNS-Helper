@@ -39,7 +39,7 @@ object ShortcutIconUtils {
         val file = try {
             File(iconFolder, fileName)
         } catch (e: NullPointerException) {
-            Log.e(TAG, "saveIcon: failed to get outputfile", e)
+            Log.e(TAG, "saveIcon: failed to get output file", e)
             onComplete(false)
             return
         }
@@ -83,6 +83,7 @@ object ShortcutIconUtils {
 
     fun getBitmapFromUri(context: Context, uri: Uri): Bitmap {
         return if (Build.VERSION.SDK_INT < 28) {
+            @Suppress("DEPRECATION")
             MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
         } else {
             val source = ImageDecoder.createSource(context.contentResolver, uri)
