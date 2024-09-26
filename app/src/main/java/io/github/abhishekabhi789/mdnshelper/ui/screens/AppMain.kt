@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +24,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -50,7 +54,8 @@ import com.github.druk.rx2dnssd.BonjourService
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.ui.activities.MainActivity.Companion.TAG
-import io.github.abhishekabhi789.mdnshelper.ui.components.AddShortcutDialog
+import io.github.abhishekabhi789.mdnshelper.ui.components.AddShortcutScreen
+import io.github.abhishekabhi789.mdnshelper.ui.components.ExtraInfoScreen
 import io.github.abhishekabhi789.mdnshelper.ui.components.ServiceInfoItem
 import io.github.abhishekabhi789.mdnshelper.ui.components.TopBar
 import io.github.abhishekabhi789.mdnshelper.ui.components.UnReachableBookmarks
@@ -59,11 +64,15 @@ import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+enum class BottomSheets(var data: MdnsInfo? = null) { NONE, ADD_SHORTCUT, MORE_INFO }
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current as Activity
+    val systemNavigationPadding =
+        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val snackbarHostState = remember { SnackbarHostState() }
     val discoveryRunning by viewModel.discoveryRunning.collectAsState()
     val availableServices by viewModel.availableServices.collectAsState()
@@ -71,13 +80,13 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
     val sortedList = remember(availableServices) {
         availableServices.sortedByDescending { it.isBookmarked }
     }
+    var bottomSheetScreen by remember { mutableStateOf(BottomSheets.NONE) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val (fabLabel, fabIcon, fabAction) = if (discoveryRunning) {
         Triple("Stop Scan", Icons.Default.SearchOff, viewModel::stopServiceDiscovery)
     } else {
         Triple("Start Scan", Icons.Default.Search, viewModel::startServiceDiscovery)
     }
-    var infoForShortcut: MdnsInfo? by remember { mutableStateOf(null) }
     val imagePicker = rememberLauncherForActivityResult(CropImageContract()) { result ->
         if (result.isSuccessful) {
             result.uriContent?.let { uri ->
@@ -160,20 +169,36 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                             }
                             actionSuccess
                         },
-                        onShortcutButtonClicked = {
-                            scope.launch {
-                                if (!viewModel.isShortcutAdded(mdnsInfo)) {
-                                    Log.d(TAG, "AppMain: shortcut not added yet")
-                                    infoForShortcut = mdnsInfo
-                                } else {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar("Shortcut for ${mdnsInfo.getServiceName()} already added")
-                                    Log.i(
-                                        TAG,
-                                        "AppMain: shortcut already added for ${mdnsInfo.getServiceName()}"
-                                    )
+                        makeBottomSheet = { requestedSheet ->
+                            when (requestedSheet) {
+                                BottomSheets.ADD_SHORTCUT -> {
+                                    scope.launch {
+                                        if (!viewModel.isShortcutAdded(mdnsInfo)) {
+                                            Log.d(TAG, "AppMain: shortcut not added yet")
+                                            bottomSheetScreen = BottomSheets.ADD_SHORTCUT
+                                            bottomSheetScreen.data = mdnsInfo
+                                        } else {
+                                            snackbarHostState.currentSnackbarData?.dismiss()
+                                            snackbarHostState.showSnackbar("Shortcut for ${mdnsInfo.getServiceName()} already added")
+                                            Log.i(
+                                                TAG,
+                                                "AppMain: shortcut already added for ${mdnsInfo.getServiceName()}"
+                                            )
+                                        }
+                                    }
+                                }
+
+                                BottomSheets.MORE_INFO -> {
+                                    bottomSheetScreen = BottomSheets.MORE_INFO
+                                    bottomSheetScreen.data = mdnsInfo
+                                }
+
+                                BottomSheets.NONE -> {
+                                    bottomSheetScreen = BottomSheets.NONE
+                                    bottomSheetScreen.data = null
                                 }
                             }
+
                         }
                     )
                 }
@@ -216,28 +241,47 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                 }
             }
         }
-        infoForShortcut?.let {info->
-            AddShortcutDialog(
-                viewModel = viewModel,
-                info = info,
-                onDismiss = { infoForShortcut = null },
-                pickNewIcon = {
-                    val cropOptions = CropImageContractOptions(
-                        null,
-                        cropImageOptions = CropImageOptions(
-                            imageSourceIncludeCamera = false,
-                            fixAspectRatio = true,
-                            outputRequestWidth = 192,
-                            outputRequestHeight = 192,
-                            cropShape = CropImageView.CropShape.OVAL
-                        )
-                    )
-                    imagePicker.launch(cropOptions)
+        if (bottomSheetScreen != BottomSheets.NONE) {
+            ModalBottomSheet(onDismissRequest = { bottomSheetScreen = BottomSheets.NONE }) {
+                when (bottomSheetScreen) {
+                    BottomSheets.ADD_SHORTCUT -> {
+                        bottomSheetScreen.data?.let {
+                            AddShortcutScreen(
+                                modifier = Modifier.padding(bottom = systemNavigationPadding),
+                                activityContext = context,
+                                viewModel = viewModel,
+                                info = it,
+                                onDismiss = { bottomSheetScreen = BottomSheets.NONE },
+                                pickNewIcon = {
+                                    val cropOptions = CropImageContractOptions(
+                                        null,
+                                        cropImageOptions = CropImageOptions(
+                                            imageSourceIncludeCamera = false,
+                                            fixAspectRatio = true,
+                                            outputRequestWidth = 192,
+                                            outputRequestHeight = 192,
+                                            cropShape = CropImageView.CropShape.OVAL
+                                        )
+                                    )
+                                    imagePicker.launch(cropOptions)
+                                }
+                            )
+                        }
+                    }
+
+                    BottomSheets.MORE_INFO -> {
+                        bottomSheetScreen.data?.let {
+                            ExtraInfoScreen(modifier = Modifier, info = it)
+                        }
+                    }
+
+                    BottomSheets.NONE -> {}
                 }
-            )
+            }
         }
     }
 }
+
 
 fun getDummyServiceInfo(): MdnsInfo {
     val dummyService =

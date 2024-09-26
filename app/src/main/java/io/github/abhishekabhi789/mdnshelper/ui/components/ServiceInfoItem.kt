@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.ui.screens.BottomSheets
 import io.github.abhishekabhi789.mdnshelper.ui.screens.getDummyServiceInfo
 import io.github.abhishekabhi789.mdnshelper.utils.UrlUtils
 
@@ -35,7 +35,7 @@ fun ServiceInfoItem(
     modifier: Modifier = Modifier,
     info: MdnsInfo,
     onBookMarkButtonClicked: (BookMarkAction) -> Boolean,
-    onShortcutButtonClicked: () -> Unit
+    makeBottomSheet: (BottomSheets) -> Unit
 ) {
     var expanded: Boolean by remember { mutableStateOf(false) }
     val cardColors = CardDefaults.cardColors().apply {
@@ -67,12 +67,18 @@ fun ServiceInfoItem(
             }
             if (expanded) {
                 HorizontalDivider()
-                Row(
-                    Modifier
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
                         .fillMaxWidth()
                         .height(IntrinsicSize.Min)
                 ) {
-                    ChipButton(label = "Add shortcut", onClick = onShortcutButtonClicked)
+                    ChipButton(
+                        label = "More Info",
+                        onClick = { makeBottomSheet(BottomSheets.MORE_INFO) })
+                    ChipButton(
+                        label = "Add shortcut",
+                        onClick = { makeBottomSheet(BottomSheets.ADD_SHORTCUT) })
                 }
             }
         }
@@ -111,5 +117,5 @@ fun PreviewServiceInfoItem() {
     ServiceInfoItem(
         info = getDummyServiceInfo(),
         onBookMarkButtonClicked = { true },
-        onShortcutButtonClicked = { })
+        makeBottomSheet = {})
 }

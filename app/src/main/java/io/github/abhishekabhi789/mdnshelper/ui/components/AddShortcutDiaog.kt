@@ -28,9 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -56,7 +54,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -69,19 +66,18 @@ import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun AddShortcutDialog(
+fun AddShortcutScreen(
     modifier: Modifier = Modifier,
+    activityContext: Activity,
     viewModel: MainActivityViewmodel,
     info: MdnsInfo,
     pickNewIcon: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current as Activity
-    val cardDefaults = CardDefaults
     val shortcutIconList by viewModel.shortcutIcons.collectAsState()
     var preferredBrowser: BrowserChoice by remember { mutableStateOf(BrowserChoice.Default) }
     val browsersAvailable: List<BrowserChoice.InstalledBrowser> =
-        remember { UrlUtils.getBrowsers(context) }
+        remember { UrlUtils.getBrowsers(activityContext) }
     var isIconDeletionMode by remember { mutableStateOf(false) }
     val deleteButton by remember {
         derivedStateOf {
@@ -91,164 +87,158 @@ fun AddShortcutDialog(
             }
         }
     }
-
-    BasicAlertDialog(
-        onDismissRequest = onDismiss,
-        modifier = modifier.background(cardDefaults.cardColors().containerColor, cardDefaults.shape)
-    ) {
-        val defaultIcon: Bitmap = remember {
-            (context.getDrawable(R.drawable.ic_launcher_foreground)
-                ?: ContextCompat.getDrawable(context, R.drawable.ic_launcher_foreground))
-                ?.toBitmap(config = Bitmap.Config.ARGB_8888)
-                ?: BitmapFactory.decodeResource(
-                    context.resources, R.drawable.ic_launcher_foreground
-                )
-        }
-
-        var selectedIconBitmap: Bitmap by remember { mutableStateOf(defaultIcon) }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text("Add shortcut", style = MaterialTheme.typography.titleLarge)
-            Text(
-                text = "Would you like to create a home screen shortcut for ${info.getServiceName()}?",
-                style = MaterialTheme.typography.bodySmall
+    val defaultIcon: Bitmap = remember {
+        (activityContext.getDrawable(R.drawable.ic_launcher_foreground)
+            ?: ContextCompat.getDrawable(activityContext, R.drawable.ic_launcher_foreground))
+            ?.toBitmap(config = Bitmap.Config.ARGB_8888)
+            ?: BitmapFactory.decodeResource(
+                activityContext.resources, R.drawable.ic_launcher_foreground
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Choose an icon", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.weight(1f))
-                if (shortcutIconList.isNotEmpty()) {
-                    IconButton(onClick = { isIconDeletionMode = !isIconDeletionMode }) {
-                        Icon(
-                            imageVector = deleteButton.first,
-                            contentDescription = deleteButton.second,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                stickyHeader {
-                    val addIcon = remember {
-                        context.getDrawable(R.drawable.ic_add_new)
-                            ?.toBitmap(config = Bitmap.Config.ARGB_8888)
-                    }
-                    addIcon?.let {
-                        ShortcutIcon(bitmap = it, isSelected = false, onClick = { pickNewIcon() })
-                    }
-                }
-                defaultIcon.let { bitmap ->
-                    item {
-                        ShortcutIcon(bitmap = bitmap,
-                            isSelected = bitmap == selectedIconBitmap,
-                            onClick = { selectedIconBitmap = bitmap }
-                        )
-                    }
-                }
-                items(shortcutIconList) { iconBitmap ->
-                    ShortcutIcon(
-                        modifier = Modifier,
-                        bitmap = iconBitmap,
-                        isSelected = selectedIconBitmap == iconBitmap,
-                        isDeletionMode = isIconDeletionMode,
-                        onClick = {
-                            if (isIconDeletionMode) {
-                                viewModel.deleteIcon(context, iconBitmap)
-                            } else {
-                                selectedIconBitmap = iconBitmap
-                            }
-                        }
+    }
+
+    var selectedIconBitmap: Bitmap by remember { mutableStateOf(defaultIcon) }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier.padding(horizontal = 16.dp)
+    ) {
+        Text("Add shortcut", style = MaterialTheme.typography.titleLarge)
+        Text(
+            text = "Would you like to create a home screen shortcut for ${info.getServiceName()}?",
+            style = MaterialTheme.typography.bodySmall
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Choose an icon", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.weight(1f))
+            if (shortcutIconList.isNotEmpty()) {
+                IconButton(onClick = { isIconDeletionMode = !isIconDeletionMode }) {
+                    Icon(
+                        imageVector = deleteButton.first,
+                        contentDescription = deleteButton.second,
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                var dropDownExpanded by remember { mutableStateOf(false) }
-
-                Text(text = "Preferred Browser", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.weight(1f))
-                ExposedDropdownMenuBox(
-                    expanded = dropDownExpanded,
-                    onExpandedChange = { dropDownExpanded = it }) {
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
-                    ) {
-                        Text(
-                            text = preferredBrowser.name,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.End
-                        )
-                        Spacer(modifier = Modifier.padding(4.dp))
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropDownExpanded)
+        }
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            stickyHeader {
+                val addIcon = remember {
+                    activityContext.getDrawable(R.drawable.ic_add_new)
+                        ?.toBitmap(config = Bitmap.Config.ARGB_8888)
+                }
+                addIcon?.let {
+                    ShortcutIcon(bitmap = it, isSelected = false, onClick = { pickNewIcon() })
+                }
+            }
+            defaultIcon.let { bitmap ->
+                item {
+                    ShortcutIcon(bitmap = bitmap,
+                        isSelected = bitmap == selectedIconBitmap,
+                        onClick = { selectedIconBitmap = bitmap }
+                    )
+                }
+            }
+            items(shortcutIconList) { iconBitmap ->
+                ShortcutIcon(
+                    modifier = Modifier,
+                    bitmap = iconBitmap,
+                    isSelected = selectedIconBitmap == iconBitmap,
+                    isDeletionMode = isIconDeletionMode,
+                    onClick = {
+                        if (isIconDeletionMode) {
+                            viewModel.deleteIcon(activityContext, iconBitmap)
+                        } else {
+                            selectedIconBitmap = iconBitmap
+                        }
                     }
-                    ExposedDropdownMenu(
-                        expanded = dropDownExpanded,
-                        onDismissRequest = { dropDownExpanded = false },
-                        modifier = Modifier.width(IntrinsicSize.Max)
-                    ) {
-                        listOf(
-                            BrowserChoice.Default,
-                            BrowserChoice.AskUser,
-                            BrowserChoice.CustomTab
-                        ).forEach { browser ->
-                            DropdownMenuItem(
-                                text = { Text(text = browser.name) },
-                                onClick = {
-                                    preferredBrowser = browser
-                                    dropDownExpanded = false
-                                })
-                        }
-                        browsersAvailable.forEach { browser ->
-                            DropdownMenuItem(
-                                text = { Text(text = browser.name) },
-                                leadingIcon = {
-                                    Image(
-                                        bitmap = browser.appIcon.asImageBitmap(),
-                                        contentDescription = null,
-                                        colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
-                                            setToSaturation(0f)
-                                        }),
-                                        modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .size(InputChipDefaults.IconSize)
-                                    )
-                                },
-                                onClick = {
-                                    preferredBrowser = browser
-                                    dropDownExpanded = false
-                                },
-                            )
-                        }
+                )
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            var dropDownExpanded by remember { mutableStateOf(false) }
+
+            Text(text = "Preferred Browser", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.weight(1f))
+            ExposedDropdownMenuBox(
+                expanded = dropDownExpanded,
+                onExpandedChange = { dropDownExpanded = it }) {
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                ) {
+                    Text(
+                        text = preferredBrowser.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.End
+                    )
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropDownExpanded)
+                }
+                ExposedDropdownMenu(
+                    expanded = dropDownExpanded,
+                    onDismissRequest = { dropDownExpanded = false },
+                    modifier = Modifier.width(IntrinsicSize.Max)
+                ) {
+                    listOf(
+                        BrowserChoice.Default,
+                        BrowserChoice.AskUser,
+                        BrowserChoice.CustomTab
+                    ).forEach { browser ->
+                        DropdownMenuItem(
+                            text = { Text(text = browser.name) },
+                            onClick = {
+                                preferredBrowser = browser
+                                dropDownExpanded = false
+                            })
+                    }
+                    browsersAvailable.forEach { browser ->
+                        DropdownMenuItem(
+                            text = { Text(text = browser.name) },
+                            leadingIcon = {
+                                Image(
+                                    bitmap = browser.appIcon.asImageBitmap(),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
+                                        setToSaturation(0f)
+                                    }),
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .size(InputChipDefaults.IconSize)
+                                )
+                            },
+                            onClick = {
+                                preferredBrowser = browser
+                                dropDownExpanded = false
+                            },
+                        )
                     }
                 }
             }
+        }
 
-            Row {
-                OutlinedButton(onClick = onDismiss) {
-                    Text(text = "Cancel")
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Button(onClick = {
-                    viewModel.addPinnedShortcut(info, selectedIconBitmap, preferredBrowser)
-                    onDismiss()
-                }) {
-                    Text(text = "Create shortcut")
-                }
+        Row {
+            OutlinedButton(onClick = onDismiss) {
+                Text(text = "Cancel")
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(onClick = {
+                viewModel.addPinnedShortcut(info, selectedIconBitmap, preferredBrowser)
+                onDismiss()
+            }) {
+                Text(text = "Create shortcut")
             }
         }
     }
