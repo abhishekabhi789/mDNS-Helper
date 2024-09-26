@@ -16,7 +16,7 @@ object ShortcutIconUtils {
     private const val TAG = "ShortcutIconUtils"
     private const val SUB_DIR_NAME = "icons"
     fun convertBitmapToIconCompat(bitmap: Bitmap): IconCompat {
-        return IconCompat.createWithBitmap(bitmap)
+        return IconCompat.createWithAdaptiveBitmap(bitmap)
     }
 
     fun saveIcon(
