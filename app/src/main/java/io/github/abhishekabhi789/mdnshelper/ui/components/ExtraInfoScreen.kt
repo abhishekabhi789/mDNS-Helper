@@ -1,18 +1,24 @@
 package io.github.abhishekabhi789.mdnshelper.ui.components
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -23,11 +29,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import org.json.JSONObject
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExtraInfoScreen(modifier: Modifier = Modifier, info: MdnsInfo) {
-    val extraInfo = remember { info.bonjourService.txtRecords.toList() }
-
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+    val extraMap: Map<String, String> = remember { info.bonjourService.txtRecords }
+    val extraInfo = remember(extraMap) { extraMap.toList() }
     Text(
         text = "Extra info",
         style = MaterialTheme.typography.titleLarge,
@@ -44,36 +54,62 @@ fun ExtraInfoScreen(modifier: Modifier = Modifier, info: MdnsInfo) {
                 .wrapContentHeight()
                 .padding(16.dp)
         ) {
-            Text(text = "No additional info found for this service")
+            Text(text = "No extra info found for this service")
         }
     } else {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = modifier.padding(16.dp)
         ) {
+            stickyHeader {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(8.dp)
+                ) {
+                    Text(text = "Copy all as JSON")
+                    Spacer(modifier = Modifier.weight(1f))
+                    OutlinedIconButton(onClick = {
+                        val json = JSONObject(extraMap).toString()
+                        clipboardManager.setText(AnnotatedString(json))
+                        Toast
+                            .makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT)
+                            .show()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = "Copy as JSON"
+                        )
+                    }
+                }
+            }
             items(extraInfo) { (key, value) ->
-                ExtraInfo(key, value)
+                ExtraInfo(modifier = Modifier, key, value)
             }
         }
     }
 }
 
 @Composable
-fun ExtraInfo(key: String, value: String) {
+fun ExtraInfo(modifier: Modifier = Modifier, key: String, value: String) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(8.dp))
             .clickable {
                 clipboardManager.setText(AnnotatedString("$key: $value"))
                 Toast
                     .makeText(context, "$key copied to clipboard", Toast.LENGTH_SHORT)
                     .show()
             }
-            .padding(8.dp)
-
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Text(
             text = key,
