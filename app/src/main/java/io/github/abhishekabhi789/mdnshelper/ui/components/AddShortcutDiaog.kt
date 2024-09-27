@@ -19,12 +19,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Remove
@@ -39,6 +41,8 @@ import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -99,7 +103,7 @@ fun AddShortcutScreen(
     var selectedIconBitmap: Bitmap by remember { mutableStateOf(defaultIcon) }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier.padding(horizontal = 16.dp)
     ) {
         Text("Add shortcut", style = MaterialTheme.typography.titleLarge)
@@ -126,15 +130,26 @@ fun AddShortcutScreen(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
         ) {
             stickyHeader {
-                val addIcon = remember {
-                    activityContext.getDrawable(R.drawable.ic_add_new)
-                        ?.toBitmap(config = Bitmap.Config.ARGB_8888)
-                }
-                addIcon?.let {
-                    ShortcutIcon(bitmap = it, isSelected = false, onClick = { pickNewIcon() })
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    modifier = Modifier
+                        .border(8.dp, MaterialTheme.colorScheme.surfaceContainerLow)
+                        .padding(8.dp)
+                ) {
+                    OutlinedIconButton(
+                        onClick = pickNewIcon,
+                        modifier = Modifier
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add, contentDescription = "Add new icon",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
             defaultIcon.let { bitmap ->
@@ -182,6 +197,7 @@ fun AddShortcutScreen(
                     Text(
                         text = preferredBrowser.name,
                         style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.End
                     )
                     Spacer(modifier = Modifier.padding(4.dp))
