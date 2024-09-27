@@ -17,8 +17,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -42,7 +43,7 @@ fun ExtraInfoScreen(modifier: Modifier = Modifier, info: MdnsInfo) {
         text = "Extra info",
         style = MaterialTheme.typography.titleLarge,
         modifier = modifier
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
             .padding(start = 16.dp)
     )
     if (extraInfo.isEmpty()) {
@@ -74,13 +75,17 @@ fun ExtraInfoScreen(modifier: Modifier = Modifier, info: MdnsInfo) {
                 ) {
                     Text(text = "Copy all as JSON")
                     Spacer(modifier = Modifier.weight(1f))
-                    OutlinedIconButton(onClick = {
-                        val json = JSONObject(extraMap).toString()
-                        clipboardManager.setText(AnnotatedString(json))
-                        Toast
-                            .makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT)
-                            .show()
-                    }) {
+                    IconButton(
+                        onClick = {
+                            val json = JSONObject(extraMap).toString()
+                            clipboardManager.setText(AnnotatedString(json))
+                            Toast
+                                .makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT)
+                                .show()
+                        },
+                        colors = IconButtonDefaults.outlinedIconButtonColors()
+                            .copy(contentColor = MaterialTheme.colorScheme.primary)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
                             contentDescription = "Copy as JSON"
