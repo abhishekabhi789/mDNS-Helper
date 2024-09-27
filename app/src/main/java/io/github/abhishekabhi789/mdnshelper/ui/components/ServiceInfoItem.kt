@@ -15,7 +15,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,8 +51,7 @@ fun ServiceInfoItem(
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .padding(8.dp)
+            modifier = Modifier.padding(8.dp)
         ) {
             ServiceInfoItemBasic(info = info, onBookMarkButtonClicked = onBookMarkButtonClicked)
             Row(
@@ -71,9 +69,9 @@ fun ServiceInfoItem(
             ) {
                 UrlSection(info = info, expanded = expanded)
             } else FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 UrlSection(info = info, expanded = expanded)
             }
@@ -108,9 +106,6 @@ fun UrlSection(modifier: Modifier = Modifier, info: MdnsInfo, expanded: Boolean)
             modifier = modifier,
             onOpenClick = { UrlUtils.browseUrl(context, url) },
             onShareClick = { UrlUtils.shareUrl(context, url) })
-    }
-    if (!expanded) {
-        VerticalDivider()
     }
     info.getHostAddress()?.let {
         val url = UrlUtils.addressAsUrl(it)
