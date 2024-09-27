@@ -17,6 +17,8 @@ data class MdnsInfo(val bonjourService: BonjourService) {
 
     fun getHostAddress(): String? = bonjourService.inet4Address?.hostAddress
 
+    fun getPort(): String = bonjourService.port.toString()
+
     fun setBookmarkStatus(isBookmarked: Boolean) {
         this.isBookmarked = isBookmarked
     }
