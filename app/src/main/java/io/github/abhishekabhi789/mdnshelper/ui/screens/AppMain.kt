@@ -3,7 +3,9 @@ package io.github.abhishekabhi789.mdnshelper.ui.screens
 import android.app.Activity
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -118,126 +120,136 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
-        LazyColumn(
-            contentPadding = innerPadding,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxSize()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
-            if (discoveryRunning) {
-                stickyHeader {
-                    Row(Modifier.fillMaxWidth()) {
-                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    }
+            AnimatedVisibility(visible = discoveryRunning) {
+                Row(Modifier.fillMaxWidth()) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
             }
-            if (availableServices.isEmpty()) {
-                item {
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text(text = "No services found")
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (availableServices.isEmpty()) {
+                    item {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text(text = "No services found")
+                        }
                     }
-                }
-            } else {
-                stickyHeader(key = "available_services") {
-                    Row(Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Available services",
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
+                } else {
+                    stickyHeader(key = "available_services") {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.secondaryContainer)
+                        ) {
+                            Text(
+                                text = "Available services",
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
+                        }
                     }
-                }
-                items(items = sortedList, key = { it.hashCode() }) { mdnsInfo ->
-                    ServiceInfoItem(
-                        info = mdnsInfo,
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        onBookMarkButtonClicked = { bookmarkAction ->
-                            var actionSuccess = false
-                            bookmarkAction.action.invoke(viewModel, mdnsInfo) { success: Boolean ->
-                                actionSuccess = success
-                                scope.launch {
-                                    val message = when (bookmarkAction) {
-                                        BookMarkAction.ADD -> if (success) "Added to bookmarks" else "failed to add to bookmarks"
-                                        BookMarkAction.REMOVE -> if (success) "Removed from bookmarks" else "Failed to remove from bookmarks"
-                                    }
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(message = message)
-                                }
-                            }
-                            actionSuccess
-                        },
-                        makeBottomSheet = { requestedSheet ->
-                            when (requestedSheet) {
-                                BottomSheets.ADD_SHORTCUT -> {
+                    items(items = sortedList, key = { it.hashCode() }) { mdnsInfo ->
+                        ServiceInfoItem(
+                            info = mdnsInfo,
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            onBookMarkButtonClicked = { bookmarkAction ->
+                                var actionSuccess = false
+                                bookmarkAction.action.invoke(
+                                    viewModel,
+                                    mdnsInfo
+                                ) { success: Boolean ->
+                                    actionSuccess = success
                                     scope.launch {
-                                        if (!viewModel.isShortcutAdded(mdnsInfo)) {
-                                            Log.d(TAG, "AppMain: shortcut not added yet")
-                                            bottomSheetScreen = BottomSheets.ADD_SHORTCUT
-                                            bottomSheetScreen.data = mdnsInfo
-                                        } else {
-                                            snackbarHostState.currentSnackbarData?.dismiss()
-                                            snackbarHostState.showSnackbar("Shortcut for ${mdnsInfo.getServiceName()} already added")
-                                            Log.i(
-                                                TAG,
-                                                "AppMain: shortcut already added for ${mdnsInfo.getServiceName()}"
-                                            )
+                                        val message = when (bookmarkAction) {
+                                            BookMarkAction.ADD -> if (success) "Added to bookmarks" else "failed to add to bookmarks"
+                                            BookMarkAction.REMOVE -> if (success) "Removed from bookmarks" else "Failed to remove from bookmarks"
+                                        }
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                        snackbarHostState.showSnackbar(message = message)
+                                    }
+                                }
+                                actionSuccess
+                            },
+                            makeBottomSheet = { requestedSheet ->
+                                when (requestedSheet) {
+                                    BottomSheets.ADD_SHORTCUT -> {
+                                        scope.launch {
+                                            if (!viewModel.isShortcutAdded(mdnsInfo)) {
+                                                Log.d(TAG, "AppMain: shortcut not added yet")
+                                                bottomSheetScreen = BottomSheets.ADD_SHORTCUT
+                                                bottomSheetScreen.data = mdnsInfo
+                                            } else {
+                                                snackbarHostState.currentSnackbarData?.dismiss()
+                                                snackbarHostState.showSnackbar("Shortcut for ${mdnsInfo.getServiceName()} already added")
+                                                Log.i(
+                                                    TAG,
+                                                    "AppMain: shortcut already added for ${mdnsInfo.getServiceName()}"
+                                                )
+                                            }
                                         }
                                     }
+
+                                    BottomSheets.MORE_INFO -> {
+                                        bottomSheetScreen = BottomSheets.MORE_INFO
+                                        bottomSheetScreen.data = mdnsInfo
+                                    }
+
+                                    BottomSheets.NONE -> {
+                                        bottomSheetScreen = BottomSheets.NONE
+                                        bottomSheetScreen.data = null
+                                    }
                                 }
 
-                                BottomSheets.MORE_INFO -> {
-                                    bottomSheetScreen = BottomSheets.MORE_INFO
-                                    bottomSheetScreen.data = mdnsInfo
-                                }
-
-                                BottomSheets.NONE -> {
-                                    bottomSheetScreen = BottomSheets.NONE
-                                    bottomSheetScreen.data = null
-                                }
                             }
-
-                        }
-                    )
-                }
-            }
-            if (availableServices.isNotEmpty() && unavailableBookmarks.isNotEmpty()) {
-                stickyHeader(key = "unreachable_bookmarks") {
-                    Row(Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Unreachable bookmarks",
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.padding(horizontal = 8.dp)
                         )
                     }
                 }
-            }
-            items(unavailableBookmarks) { bookmark ->
-                UnReachableBookmarks(
-                    info = bookmark,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    var actionSuccess = false
-                    it.action.invoke(viewModel, bookmark) { success: Boolean ->
-                        actionSuccess = success
-                        val message = if (success) "Removed from bookmarks"
-                        else "Failed to remove from bookmarks"
-                        scope.launch {
-                            val snackbarResult = snackbarHostState.showSnackbar(
-                                message = message,
-                                actionLabel = "Undo",
-                                duration = SnackbarDuration.Short
+                if (availableServices.isNotEmpty() && unavailableBookmarks.isNotEmpty()) {
+                    stickyHeader(key = "unreachable_bookmarks") {
+                        Row(Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Unreachable bookmarks",
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.padding(horizontal = 8.dp)
                             )
-                            when (snackbarResult) {
-                                SnackbarResult.Dismissed -> {}
-                                SnackbarResult.ActionPerformed ->
-                                    BookMarkAction.ADD.action.invoke(viewModel, bookmark, {})
-                            }
                         }
                     }
-                    actionSuccess
+                }
+                items(unavailableBookmarks) { bookmark ->
+                    UnReachableBookmarks(
+                        info = bookmark,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    ) {
+                        var actionSuccess = false
+                        it.action.invoke(viewModel, bookmark) { success: Boolean ->
+                            actionSuccess = success
+                            val message = if (success) "Removed from bookmarks"
+                            else "Failed to remove from bookmarks"
+                            scope.launch {
+                                val snackbarResult = snackbarHostState.showSnackbar(
+                                    message = message,
+                                    actionLabel = "Undo",
+                                    duration = SnackbarDuration.Short
+                                )
+                                when (snackbarResult) {
+                                    SnackbarResult.Dismissed -> {}
+                                    SnackbarResult.ActionPerformed ->
+                                        BookMarkAction.ADD.action.invoke(viewModel, bookmark, {})
+                                }
+                            }
+                        }
+                        actionSuccess
+                    }
                 }
             }
         }
