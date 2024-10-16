@@ -1,18 +1,17 @@
 [versions]
-agp = "8.5.2"
+agp = "8.7.1"
 androidImageCropper = "4.6.0"
 daggerHilt = "2.52"
 hiltNavigationCompose = "1.2.0"
-#noinspection GradleDependency
-kotlin = "1.9.0" #kapt will fail if updated to 2.0
+kotlin = "2.0.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.2"
-composeBom = "2024.09.02"
-materialIconsExtended = "1.7.2"
+composeBom = "2024.09.03"
+materialIconsExtended = "1.7.3"
 rx2dnssd = "0.9.17"
 ossLicensesPlugin = "0.10.6"
 playServicesOssLicenses = "17.1.0"
@@ -47,3 +46,4 @@ androidx-browser = { group = "androidx.browser", name = "browser", version.ref =
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 dagger-hilt-android = {id ="com.google.dagger.hilt.android", version.ref = "daggerHilt"}
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

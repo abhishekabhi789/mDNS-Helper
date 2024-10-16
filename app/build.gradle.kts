@@ -4,6 +4,7 @@ plugins {
     id("kotlin-kapt")
     alias(libs.plugins.dagger.hilt.android)
     id("com.google.android.gms.oss-licenses-plugin")
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
