@@ -22,9 +22,13 @@ object UrlUtils {
 
     fun shareUrl(context: Context, url: String) {
         try {
-            context.startActivity(Intent(Intent.ACTION_SEND, Uri.parse(url)))
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                setType("text/plain")
+                putExtra(Intent.EXTRA_TEXT, url)
+            }
+            context.startActivity(Intent.createChooser(intent, "Choose an app to share $url"))
         } catch (e: Exception) {
-            Log.e(TAG, "browseUrl: failed to share url $url", e)
+            Log.e(TAG, "browseUrl: failed to share url with", e)
         }
     }
 
@@ -39,10 +43,9 @@ object UrlUtils {
             BrowserChoice.Default.packageName -> browseUrl(context, url)
             BrowserChoice.AskUser.packageName -> {
                 Log.d(TAG, "openWithBrowser: creating chooser")
-                val chooserIntent = Intent.createChooser(intent, "Choose an app for url $url")
-                chooserIntent.setFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-                )
+                val chooserIntent = Intent
+                    .createChooser(intent, "Choose an app for url $url")
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                 context.startActivity(chooserIntent)
             }
 
