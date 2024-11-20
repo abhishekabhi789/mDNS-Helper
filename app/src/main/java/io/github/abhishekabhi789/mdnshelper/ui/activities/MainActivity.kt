@@ -1,28 +1,35 @@
 package io.github.abhishekabhi789.mdnshelper.ui.activities
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.mdnshelper.BuildConfig
 import io.github.abhishekabhi789.mdnshelper.ui.screens.AppMain
 import io.github.abhishekabhi789.mdnshelper.ui.theme.MDNSHelperTheme
 import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -30,19 +37,47 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainActivityViewmodel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val hasNearbyPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.NEARBY_WIFI_DEVICES
+            ) == PackageManager.PERMISSION_GRANTED
+        else true
         setContent {
             MDNSHelperTheme {
+                var nearbyPermissionGranted: Boolean by remember {
+                    mutableStateOf(hasNearbyPermission)
+                }
+                val permissionLauncher =
+                    rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                        Log.i(TAG, "onCreate: permission granted - $isGranted")
+                        Toast(this@MainActivity).run {
+                            if (isGranted) setText("Permission Granted")
+                            else setText("Permission denied for searching nearby devices")
+                            duration = Toast.LENGTH_SHORT
+                            show()
+                        }
+                        nearbyPermissionGranted = isGranted
+                    }
+                LaunchedEffect(Unit) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (!nearbyPermissionGranted) permissionLauncher.launch(Manifest.permission.NEARBY_WIFI_DEVICES)
+                    } else {
+                        Log.i(TAG, "onCreate: no need to ask nearyby device permission")
+                        nearbyPermissionGranted = true
+                    }
+                }
+                LaunchedEffect(nearbyPermissionGranted) {
+                    if (nearbyPermissionGranted) {
+                        viewModel.startServiceDiscovery()
+                        viewModel.refreshShortcutIconList(context = this@MainActivity)
+                    } else Log.i(TAG, "onCreate: nearby permission is not granted")
+                }
                 Surface(Modifier.fillMaxSize()) {
                     AppMain(viewModel)
                 }
-            }
-        }
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
-                viewModel.startServiceDiscovery()
-                viewModel.refreshShortcutIconList(context = this@MainActivity)
             }
         }
     }

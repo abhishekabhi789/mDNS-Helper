@@ -10,8 +10,8 @@ import io.github.abhishekabhi789.mdnshelper.ui.theme.MDNSHelperTheme
 
 class AboutActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
         setContent {
             MDNSHelperTheme {
                 AboutScreen(modifier = Modifier) {

@@ -86,6 +86,7 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
     }
 
     fun resolveServiceWithInfos(regType: String, domain: String?) {
+        Log.d(TAG, "resolveServiceWithInfos: regType $regType domain $domain")
         try {
             browseDisposable = rxDnsSd.browse(regType, domain ?: "local.")
                 .compose(rxDnsSd.resolve())
@@ -144,12 +145,12 @@ class ServiceDiscoveryManager @Inject constructor(@ApplicationContext context: C
 
     private fun createDnsSd(context: Context): Rx2Dnssd {
         // https://developer.android.com/about/versions/12/behavior-changes-12#mdnsresponder
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Log.i(TAG, "Using embedded version of dns sd")
-            return Rx2DnssdEmbedded(context)
+            Rx2DnssdEmbedded(context)
         } else {
             Log.i(TAG, "Using bindable version of dns sd")
-            return Rx2DnssdBindable(context)
+            Rx2DnssdBindable(context)
         }
     }
 
