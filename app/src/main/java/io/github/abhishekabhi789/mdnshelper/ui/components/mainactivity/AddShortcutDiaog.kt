@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.ui.components
+package io.github.abhishekabhi789.mdnshelper.ui.components.mainactivity
 
 import android.app.Activity
 import android.graphics.Bitmap

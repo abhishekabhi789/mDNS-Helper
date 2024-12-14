@@ -55,12 +55,13 @@ import com.canhub.cropper.CropImageView
 import com.github.druk.rx2dnssd.BonjourService
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.data.ServiceInfo
 import io.github.abhishekabhi789.mdnshelper.ui.activities.MainActivity.Companion.TAG
-import io.github.abhishekabhi789.mdnshelper.ui.components.AddShortcutScreen
-import io.github.abhishekabhi789.mdnshelper.ui.components.ExtraInfoScreen
-import io.github.abhishekabhi789.mdnshelper.ui.components.ServiceInfoItem
-import io.github.abhishekabhi789.mdnshelper.ui.components.TopBar
-import io.github.abhishekabhi789.mdnshelper.ui.components.UnReachableBookmarks
+import io.github.abhishekabhi789.mdnshelper.ui.components.mainactivity.AddShortcutScreen
+import io.github.abhishekabhi789.mdnshelper.ui.components.mainactivity.ExtraInfoList
+import io.github.abhishekabhi789.mdnshelper.ui.components.serviceinfo.ServiceInfoItem
+import io.github.abhishekabhi789.mdnshelper.ui.components.mainactivity.TopBar
+import io.github.abhishekabhi789.mdnshelper.ui.components.serviceinfo.UnReachableBookmarks
 import io.github.abhishekabhi789.mdnshelper.utils.ShortcutIconUtils
 import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
 import kotlinx.coroutines.flow.collectLatest
@@ -287,7 +288,7 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
 
                     BottomSheets.MORE_INFO -> {
                         bottomSheetScreen.data?.let {
-                            ExtraInfoScreen(modifier = Modifier, info = it)
+                            ExtraInfoList(modifier = Modifier, extraMap = it.getExtraInfo())
                         }
                     }
 
@@ -305,5 +306,5 @@ fun getDummyServiceInfo(): MdnsInfo {
             .port(789)
             .hostname("test.local.")
             .build()
-    return MdnsInfo(dummyService)
+    return MdnsInfo(ServiceInfo.BonjourInfo(dummyService))
 }

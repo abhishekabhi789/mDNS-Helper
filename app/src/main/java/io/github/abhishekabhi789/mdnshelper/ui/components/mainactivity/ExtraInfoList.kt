@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.ui.components
+package io.github.abhishekabhi789.mdnshelper.ui.components.mainactivity
 
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -28,16 +28,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import org.json.JSONObject
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ExtraInfoScreen(modifier: Modifier = Modifier, info: MdnsInfo) {
+fun ExtraInfoList(modifier: Modifier = Modifier, extraMap: Map<String, String>) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-    val extraMap: Map<String, String> = remember { info.bonjourService.txtRecords }
     val extraInfo = remember(extraMap) { extraMap.toList() }
     Text(
         text = "Extra info",
@@ -127,4 +126,11 @@ fun ExtraInfo(modifier: Modifier = Modifier, key: String, value: String) {
             style = MaterialTheme.typography.bodyMedium
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewExtraInfoList() {
+    val dummyValues = mapOf(Pair("Key 1", "Value 1"), Pair("Key 2", "Value 2"))
+    ExtraInfoList(extraMap = dummyValues)
 }

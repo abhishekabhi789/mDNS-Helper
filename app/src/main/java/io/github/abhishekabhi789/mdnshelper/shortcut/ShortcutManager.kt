@@ -56,7 +56,6 @@ class ShortcutManager @Inject constructor(@ApplicationContext private val contex
                 val shortcutId = info.getServiceType() + info.getServiceName()
                 val shortcut = ShortcutInfoCompat.Builder(context, shortcutId).apply {
                     setShortLabel(info.getServiceName().replaceFirstChar { it.uppercase() })
-                    setLongLabel("${info.getHostName()} from ${info.getServiceType()} ${info.getServiceName()}")
                     setIcon(iconCompat)
                     setExtras(extras)
                     setDisabledMessage("Failed to start shortcut, try recreating")

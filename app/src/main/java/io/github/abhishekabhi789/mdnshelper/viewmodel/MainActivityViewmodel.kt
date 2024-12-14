@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager
 import io.github.abhishekabhi789.mdnshelper.data.BrowserChoice
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.data.ServiceInfo
 import io.github.abhishekabhi789.mdnshelper.nsd.ServiceDiscoveryManager
 import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
 import io.github.abhishekabhi789.mdnshelper.utils.ShortcutIconUtils
@@ -64,15 +65,13 @@ class MainActivityViewmodel @Inject constructor(
         )
 
     init {
-        dnssdHelper.onServiceFoundCallback = { bonjourService ->
+        dnssdHelper.onServiceFoundCallback = { serviceInfo ->
             viewModelScope.launch {
                 _availableServices.update { list ->
-                    if (list.none { it.bonjourService == bonjourService }) {
-                        Log.d(TAG, "onServiceFound: new service ${bonjourService.regType}")
-                        val mdnsInfo = MdnsInfo(bonjourService).apply {
-                            setBookmarkStatus(checkBookmarked(this))
-                        }
-                        list.toMutableList().apply { add(mdnsInfo) }
+                    if (list.none { it.service == serviceInfo.service }) {
+                        Log.d(TAG, "onServiceFound: new service $serviceInfo")
+                        serviceInfo.setBookmarkStatus(checkBookmarked(serviceInfo))
+                        list.toMutableList().apply { add(serviceInfo) }
                     } else list
                 }
             }
@@ -158,9 +157,9 @@ class MainActivityViewmodel @Inject constructor(
             (Math.random() * 100).toInt(),
             bookmarkInfo.second,
             bookmarkInfo.first,
-            "local."
+            ServiceDiscoveryManager.LOCAL_DOMAIN
         ).build()
-        return MdnsInfo(bonjourService)
+        return MdnsInfo(ServiceInfo.BonjourInfo(bonjourService))
     }
 
     fun refreshShortcutIconList(context: Context) {
@@ -187,6 +186,6 @@ class MainActivityViewmodel @Inject constructor(
 
     companion object {
         private const val TAG = "MdnsHelperViewModel"
-        private const val SCANNER_TIMEOUT = 10_000L //30s
+        private const val SCANNER_TIMEOUT = 10_000L
     }
 }

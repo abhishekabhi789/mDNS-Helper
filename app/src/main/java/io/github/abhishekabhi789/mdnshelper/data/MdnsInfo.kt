@@ -1,23 +1,52 @@
 package io.github.abhishekabhi789.mdnshelper.data
 
+import android.net.nsd.NsdServiceInfo
 import com.github.druk.rx2dnssd.BonjourService
 
-data class MdnsInfo(val bonjourService: BonjourService) {
+sealed class ServiceInfo {
+    data class BonjourInfo(val bonjourInfo: BonjourService) : ServiceInfo()
+    data class NsdInfo(val nsdInfo: NsdServiceInfo) : ServiceInfo()
+}
+
+data class MdnsInfo(val service: ServiceInfo) {
 
     var isBookmarked = false
         private set
 
-    fun getServiceType(): String = bonjourService.regType
+    fun getServiceType(): String = when (service) {
+        is ServiceInfo.BonjourInfo -> service.bonjourInfo.regType
+        is ServiceInfo.NsdInfo -> service.nsdInfo.serviceType
+    }
 
-    fun getServiceName(): String = bonjourService.serviceName
+    fun getServiceName(): String = when (service) {
+        is ServiceInfo.BonjourInfo -> service.bonjourInfo.serviceName
+        is ServiceInfo.NsdInfo -> service.nsdInfo.serviceName
+    }
 
-    fun getDomain(): String? = bonjourService.domain
+    fun getDomain(): String? = when (service) {
+        is ServiceInfo.BonjourInfo -> service.bonjourInfo.domain
+        is ServiceInfo.NsdInfo -> "serviceName to be implemented"
+    }
 
-    fun getHostName(): String? = bonjourService.hostname
+    fun getHostName(): String? = when (service) {
+        is ServiceInfo.BonjourInfo -> service.bonjourInfo.hostname
+        is ServiceInfo.NsdInfo -> "hostName to be implemented"
+    }
 
-    fun getHostAddress(): String? = bonjourService.inet4Address?.hostAddress
+    fun getHostAddress(): String? = when (service) {
+        is ServiceInfo.BonjourInfo -> service.bonjourInfo.inet4Address?.hostAddress
+        is ServiceInfo.NsdInfo -> "Host address to be implemented"
+    }
 
-    fun getPort(): String = bonjourService.port.toString()
+    fun getPort(): String = when (service) {
+        is ServiceInfo.BonjourInfo -> service.bonjourInfo.port.toString()
+        is ServiceInfo.NsdInfo -> service.nsdInfo.port.toString()
+    }
+
+    fun getExtraInfo(): Map<String, String> = when (service) {
+        is ServiceInfo.BonjourInfo -> service.bonjourInfo.txtRecords
+        is ServiceInfo.NsdInfo -> emptyMap()
+    }
 
     fun setBookmarkStatus(isBookmarked: Boolean) {
         this.isBookmarked = isBookmarked

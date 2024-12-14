@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.ui.components
+package io.github.abhishekabhi789.mdnshelper.ui.components.serviceinfo
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

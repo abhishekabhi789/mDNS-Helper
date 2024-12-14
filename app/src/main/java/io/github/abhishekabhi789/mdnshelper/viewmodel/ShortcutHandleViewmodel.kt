@@ -6,6 +6,7 @@ import androidx.annotation.FloatRange
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.abhishekabhi789.mdnshelper.nsd.DiscoveredService
 import io.github.abhishekabhi789.mdnshelper.nsd.ServiceDiscoveryManager
 import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
 import kotlinx.coroutines.delay
@@ -31,8 +32,8 @@ class ShortcutHandleViewmodel @Inject constructor(
     private var isResolverRunning = false
 
     init {
-        dnssdHelper.onServiceFoundCallback = { bonjourService ->
-            val address = bonjourService.inet4Address?.hostAddress
+        dnssdHelper.onServiceFoundCallback = { mdnsInfo ->
+            val address = mdnsInfo.getHostAddress()
             Log.i(TAG, "onServiceFoundCallback: address: $address")
             _resolvingProgress.update { 1.0f }
             _currentAddress.update { address }
@@ -52,9 +53,11 @@ class ShortcutHandleViewmodel @Inject constructor(
             updateProgress(0f)
             launch {
                 shortcutManager?.getShortcutInfoFromIntent(
-                    intent,
-                    onFound = { regType, _, domain ->
-                        dnssdHelper.resolveServiceWithInfos(regType, domain)
+                    intent = intent,
+                    onFound = { regType, name, domain ->
+                        val discoveredService =
+                            DiscoveredService.ShortcutInfo(regType, name, domain)
+                        dnssdHelper.resolveService(discoveredService)
                     },
                     onFailed = {
                         Log.e(TAG, "isServiceAvailable: failed to get shortcut info")

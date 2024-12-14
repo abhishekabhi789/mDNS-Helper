@@ -6,16 +6,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.qualifiers.ActivityContext
-import io.github.abhishekabhi789.mdnshelper.nsd.ServiceDiscoveryManager
 import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
 
 @InstallIn(ActivityComponent::class)
 @Module
-object MdnsHelperViewModelModule {
-    @Provides
-    fun getServiceDiscoveryManager(@ActivityContext context: Context): ServiceDiscoveryManager {
-        return ServiceDiscoveryManager(context)
-    }
+object ShortcutManagerModule {
 
     @Provides
     fun getShortcutManager(@ActivityContext context: Context): ShortcutManager {

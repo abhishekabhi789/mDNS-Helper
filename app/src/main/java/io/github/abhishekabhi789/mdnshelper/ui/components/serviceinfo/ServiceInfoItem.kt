@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.mdnshelper.ui.components
+package io.github.abhishekabhi789.mdnshelper.ui.components.serviceinfo
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.ui.components.ChipButton
+import io.github.abhishekabhi789.mdnshelper.ui.components.UrlColumn
 import io.github.abhishekabhi789.mdnshelper.ui.screens.BottomSheets
 import io.github.abhishekabhi789.mdnshelper.ui.screens.getDummyServiceInfo
 import io.github.abhishekabhi789.mdnshelper.utils.UrlUtils

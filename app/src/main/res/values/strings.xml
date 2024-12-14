@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">mDNS Helper</string>
-    <string name="title_activity_about">AboutActivity</string>
+    <string name="title_activity_about">About</string>
+    <string name="title_settings_activity">Settings</string>
 </resources>
