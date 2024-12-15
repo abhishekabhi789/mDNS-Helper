@@ -47,9 +47,10 @@ class ServiceDiscoveryManager @Inject constructor(
     private val serviceQueue: Queue<DiscoveredService> = LinkedList()
     private var discoverMethod: DiscoverMethod = DiscoverMethod.NsdManager
     private var resolvingMethod: ResolvingMethod = ResolvingMethod.NsdManager
+    private val nsdResolvers = mutableListOf<NsdManager.ResolveListener>()
 
     init {
-        multicastLock.setReferenceCounted(true)
+        multicastLock.setReferenceCounted(false)
         CoroutineScope(Dispatchers.IO).launch {
             appPreferences.discoveryMethod.collect { method ->
                 discoverMethod = method
@@ -113,10 +114,23 @@ class ServiceDiscoveryManager @Inject constructor(
         }
     }
 
-    private val resolverListener = object : NsdManager.ResolveListener {
+    private fun getResolveListener() = object : NsdManager.ResolveListener {
+        override fun onStopResolutionFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
+            super.onStopResolutionFailed(serviceInfo, errorCode)
+            val errorMsg =
+                "${serviceInfo.serviceType} $errorCode ${getNsdManagerFailureType(errorCode)}"
+            Log.i(TAG, "onStopResolutionFailed: $errorMsg")
+        }
+
+        override fun onResolutionStopped(serviceInfo: NsdServiceInfo) {
+            super.onResolutionStopped(serviceInfo)
+            Log.i(TAG, "onResolutionStopped: ${serviceInfo.serviceType}")
+        }
 
         override fun onResolveFailed(serviceInfo: NsdServiceInfo?, errorCode: Int) {
-            Log.i(TAG, "onResolveFailed: errorCode: $errorCode $serviceInfo")
+            val errorMsg =
+                "${serviceInfo?.serviceType} $errorCode ${getNsdManagerFailureType(errorCode)}"
+            Log.i(TAG, "onResolveFailed: $errorMsg")
         }
 
         override fun onServiceResolved(serviceInfo: NsdServiceInfo?) {
@@ -201,7 +215,7 @@ class ServiceDiscoveryManager @Inject constructor(
                     }
                 }, { throwable -> Log.e(TAG, "resolveServiceWithDnsSd: failed", throwable) })
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "resolveServiceWithDnsSd: failed to resolve $regType", e)
             onError?.invoke(e.message ?: "error resolving")
         } finally {
             processNextInQueue()
@@ -241,7 +255,10 @@ class ServiceDiscoveryManager @Inject constructor(
                             )
                         } else {
                             Log.d(TAG, "resolveService: using resolveService methodṣ for resolving")
-                            nsdManager.resolveService(service.serviceInfo, resolverListener)
+                            getResolveListener().also { listener ->
+                                nsdResolvers.add(listener)
+                                nsdManager.resolveService(service.serviceInfo, listener)
+                            }
                         }
                     }
 
@@ -264,7 +281,6 @@ class ServiceDiscoveryManager @Inject constructor(
                 DiscoverMethod.NsdManager -> discoverWithNsdManager(SERVICE_TYPE)
                 DiscoverMethod.RxDnsSd -> discoverWithDnsSd()
             }
-
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -281,15 +297,19 @@ class ServiceDiscoveryManager @Inject constructor(
         }
         try {
             nsdManager.stopServiceDiscovery(discoveryListener)
+            if (isServiceInfoCallbackSupported && nsdResolvers.isNotEmpty()) {
+                for (listener in nsdResolvers) {
+                    nsdManager.stopServiceResolution(listener)
+                }
+            }
             if (isServiceInfoCallbackSupported) {
                 Log.i(TAG, "stopServiceDiscovery: unregistering serviceInfoCallback")
                 nsdManager.unregisterServiceInfoCallback(serviceInfoCallback!!)
             }
-
         } catch (e: IllegalArgumentException) {
             Log.i(TAG, "stopServiceDiscovery: found listener wasn't attached")
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "stopServiceDiscovery: failed to stop service discovery", e)
         } finally {
             multicastLock.release()
         }
@@ -312,6 +332,17 @@ class ServiceDiscoveryManager @Inject constructor(
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
                 && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.TIRAMISU) >= 7).also {
             Log.i(TAG, "isServiceInfoCallbackMethodAvailable: method available $it")
+        }
+    }
+
+    private fun getNsdManagerFailureType(errorCode: Int): String {
+        return when (errorCode) {
+            NsdManager.FAILURE_INTERNAL_ERROR -> "INTERNAL_ERROR"
+            NsdManager.FAILURE_ALREADY_ACTIVE -> "ALREADY_ACTIVE"
+            NsdManager.FAILURE_MAX_LIMIT -> "MAX_LIMIT"
+            NsdManager.FAILURE_OPERATION_NOT_RUNNING -> "OPERATION_NOT_RUNNING"
+            NsdManager.FAILURE_BAD_PARAMETERS -> "BAD_PARAMETERS"
+            else -> "Unknown Error"
         }
     }
 

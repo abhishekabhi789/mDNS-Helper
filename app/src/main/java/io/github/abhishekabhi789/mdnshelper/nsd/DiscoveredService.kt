@@ -25,7 +25,9 @@ sealed class DiscoveredService {
 
     /**If NsdManager is used to discover, the [NsdServiceInfo] can be stored here.*/
     data class NsdInfo(val serviceInfo: NsdServiceInfo) : DiscoveredService() {
-        override fun getType(): String = serviceInfo.serviceType
+        private val regTypeParts = serviceInfo.serviceType.split(SEPARATOR)
+        private val serviceType = serviceInfo.serviceName + SEPARATOR + regTypeParts.first()
+        override fun getType(): String = serviceType
         override fun getName(): String = serviceInfo.serviceName
         override fun getServiceDomain(): String? = null
     }
