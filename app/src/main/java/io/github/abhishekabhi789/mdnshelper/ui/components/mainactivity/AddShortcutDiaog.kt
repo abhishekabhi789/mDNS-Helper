@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -86,8 +87,11 @@ fun AddShortcutScreen(
     val deleteButton by remember {
         derivedStateOf {
             Icons.Default.let { icons ->
-                if (isIconDeletionMode && shortcutIconList.isNotEmpty()) Pair(icons.Done, "Done")
-                else Pair(icons.Delete, "Delete")
+                if (isIconDeletionMode && shortcutIconList.isNotEmpty()) Pair(
+                    icons.Done,
+                    R.string.shortcut_icon_exit_deletion_state
+                )
+                else Pair(icons.Delete, R.string.shortcut_icon_enter_deletion_state)
             }
         }
     }
@@ -106,22 +110,28 @@ fun AddShortcutScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier.padding(horizontal = 16.dp)
     ) {
-        Text("Add shortcut", style = MaterialTheme.typography.titleLarge)
         Text(
-            text = "Would you like to create a home screen shortcut for ${info.getServiceName()}?",
+            stringResource(R.string.add_shortcut_dialog_title),
+            style = MaterialTheme.typography.titleLarge
+        )
+        Text(
+            text = stringResource(R.string.add_shortcut_dialog_description, info.getServiceName()),
             style = MaterialTheme.typography.bodySmall
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Choose an icon", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = stringResource(R.string.add_shortcut_dialog_choose_icon),
+                style = MaterialTheme.typography.bodyMedium
+            )
             Spacer(modifier = Modifier.weight(1f))
             if (shortcutIconList.isNotEmpty()) {
                 IconButton(onClick = { isIconDeletionMode = !isIconDeletionMode }) {
                     Icon(
                         imageVector = deleteButton.first,
-                        contentDescription = deleteButton.second,
+                        contentDescription = stringResource(deleteButton.second),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -142,11 +152,15 @@ fun AddShortcutScreen(
                         .padding(8.dp)
                 ) {
                     OutlinedIconButton(
-                        onClick = pickNewIcon,
+                        onClick = {
+                            isIconDeletionMode = false
+                            pickNewIcon()
+                        },
                         modifier = Modifier
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add, contentDescription = "Add new icon",
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(R.string.add_shortcut_dialog_pick_new_icon),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -182,7 +196,10 @@ fun AddShortcutScreen(
         ) {
             var dropDownExpanded by remember { mutableStateOf(false) }
 
-            Text(text = "Preferred Browser", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = stringResource(R.string.add_shortcut_dialog_preferred_browser),
+                style = MaterialTheme.typography.bodyMedium
+            )
             Spacer(modifier = Modifier.weight(1f))
             ExposedDropdownMenuBox(
                 expanded = dropDownExpanded,
@@ -195,7 +212,7 @@ fun AddShortcutScreen(
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                 ) {
                     Text(
-                        text = preferredBrowser.name,
+                        text = stringResource(preferredBrowser.choiceLabel),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.End
@@ -214,7 +231,7 @@ fun AddShortcutScreen(
                         BrowserChoice.CustomTab
                     ).forEach { browser ->
                         DropdownMenuItem(
-                            text = { Text(text = browser.name) },
+                            text = { Text(text = stringResource(browser.choiceLabel)) },
                             onClick = {
                                 preferredBrowser = browser
                                 dropDownExpanded = false
@@ -222,7 +239,7 @@ fun AddShortcutScreen(
                     }
                     browsersAvailable.forEach { browser ->
                         DropdownMenuItem(
-                            text = { Text(text = browser.name) },
+                            text = { Text(text = browser.appName) },
                             leadingIcon = {
                                 Image(
                                     bitmap = browser.appIcon.asImageBitmap(),
@@ -247,14 +264,14 @@ fun AddShortcutScreen(
 
         Row {
             OutlinedButton(onClick = onDismiss) {
-                Text(text = "Cancel")
+                Text(text = stringResource(R.string.add_shortcut_dialog_cancel_operation))
             }
             Spacer(modifier = Modifier.width(16.dp))
             Button(onClick = {
                 viewModel.addPinnedShortcut(info, selectedIconBitmap, preferredBrowser)
                 onDismiss()
             }) {
-                Text(text = "Create shortcut")
+                Text(text = stringResource(R.string.add_shortcut_dialog_create_shortcut))
             }
         }
     }
@@ -289,7 +306,7 @@ fun ShortcutIcon(
         )
         if (isDeletionMode) Icon(
             imageVector = Icons.Default.Remove,
-            contentDescription = "Delete icon",
+            contentDescription = stringResource(R.string.shortcut_icon_deletion_state_description),
             modifier = Modifier
                 .background(Color.Red, CircleShape)
                 .align(Alignment.TopEnd)

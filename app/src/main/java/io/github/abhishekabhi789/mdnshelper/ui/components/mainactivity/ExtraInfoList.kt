@@ -27,9 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import io.github.abhishekabhi789.mdnshelper.R
 import org.json.JSONObject
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -39,7 +41,7 @@ fun ExtraInfoList(modifier: Modifier = Modifier, extraMap: Map<String, String>) 
     val clipboardManager = LocalClipboardManager.current
     val extraInfo = remember(extraMap) { extraMap.toList() }
     Text(
-        text = "Extra info",
+        text = stringResource(R.string.extra_info_dialog_title),
         style = MaterialTheme.typography.titleLarge,
         modifier = modifier
             .padding(horizontal = 16.dp)
@@ -54,7 +56,7 @@ fun ExtraInfoList(modifier: Modifier = Modifier, extraMap: Map<String, String>) 
                 .wrapContentHeight()
                 .padding(16.dp)
         ) {
-            Text(text = "No extra info found for this service")
+            Text(text = stringResource(R.string.extra_info_is_empty))
         }
     } else {
         LazyColumn(
@@ -72,14 +74,14 @@ fun ExtraInfoList(modifier: Modifier = Modifier, extraMap: Map<String, String>) 
                         )
                         .padding(8.dp)
                 ) {
-                    Text(text = "Copy all as JSON")
+                    Text(text = stringResource(R.string.extra_info_copy_as_json))
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(
                         onClick = {
                             val json = JSONObject(extraMap).toString()
                             clipboardManager.setText(AnnotatedString(json))
                             Toast
-                                .makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT)
+                                .makeText(context, R.string.copied_to_clipboard, Toast.LENGTH_SHORT)
                                 .show()
                         },
                         colors = IconButtonDefaults.outlinedIconButtonColors()
@@ -87,7 +89,7 @@ fun ExtraInfoList(modifier: Modifier = Modifier, extraMap: Map<String, String>) 
                     ) {
                         Icon(
                             imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Copy as JSON"
+                            contentDescription = stringResource(R.string.extra_info_copy_as_json_button_description)
                         )
                     }
                 }
@@ -110,7 +112,11 @@ fun ExtraInfo(modifier: Modifier = Modifier, key: String, value: String) {
             .clickable {
                 clipboardManager.setText(AnnotatedString("$key: $value"))
                 Toast
-                    .makeText(context, "$key copied to clipboard", Toast.LENGTH_SHORT)
+                    .makeText(
+                        context,
+                        context.getString(R.string.item_copied_to_clipboard, key),
+                        Toast.LENGTH_SHORT
+                    )
                     .show()
             }
             .padding(horizontal = 12.dp, vertical = 8.dp)

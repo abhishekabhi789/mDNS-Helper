@@ -23,8 +23,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.ui.components.ChipButton
@@ -61,7 +63,8 @@ fun ServiceInfoItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Port: ${info.getPort()}", style = MaterialTheme.typography.bodySmall,
+                    text = stringResource(R.string.service_info_port, info.getPort()),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.tertiary
                 )
             }
@@ -86,10 +89,10 @@ fun ServiceInfoItem(
                         .height(IntrinsicSize.Min)
                 ) {
                     ChipButton(
-                        label = "More Info",
+                        label = stringResource(R.string.service_info_more_info),
                         onClick = { makeBottomSheet(BottomSheets.MORE_INFO) })
                     ChipButton(
-                        label = "Add shortcut",
+                        label = stringResource(R.string.service_info_add_shortcut),
                         onClick = { makeBottomSheet(BottomSheets.ADD_SHORTCUT) })
                 }
             }

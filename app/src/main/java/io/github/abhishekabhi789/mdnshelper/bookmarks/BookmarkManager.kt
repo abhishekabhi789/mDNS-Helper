@@ -3,13 +3,15 @@ package io.github.abhishekabhi789.mdnshelper.bookmarks
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.ui.graphics.vector.ImageVector
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
+import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
+import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -76,17 +78,17 @@ class BookmarkManager @Inject constructor(@ApplicationContext private val contex
     }
 
     enum class BookMarkAction(
-        val label: String,
+        @StringRes val label: Int,
         val icon: ImageVector,
         val action: (viewModel: MainActivityViewmodel, info: MdnsInfo, onComplete: (success: Boolean) -> Unit) -> Unit
     ) {
         ADD(
-            "Add to bookmarks", Icons.Default.BookmarkBorder,
+            R.string.label_bookmark_action_add, Icons.Default.BookmarkBorder,
             { viewModel, info, onComplete ->
                 viewModel.addOrRemoveFromBookmark(info = info, add = true, onComplete = onComplete)
             }),
         REMOVE(
-            "Remove from bookmarks", Icons.Default.Bookmark,
+            R.string.label_bookmark_action_remove, Icons.Default.Bookmark,
             { viewModel, info, onComplete ->
                 viewModel.addOrRemoveFromBookmark(info = info, add = false, onComplete = onComplete)
             }),

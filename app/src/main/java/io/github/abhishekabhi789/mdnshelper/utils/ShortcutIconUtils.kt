@@ -15,6 +15,8 @@ import java.io.FileOutputStream
 object ShortcutIconUtils {
     private const val TAG = "ShortcutIconUtils"
     private const val SUB_DIR_NAME = "icons"
+    private val fileName = "Icon-${System.currentTimeMillis()}.png"
+
     fun convertBitmapToIconCompat(bitmap: Bitmap): IconCompat {
         return IconCompat.createWithAdaptiveBitmap(bitmap)
     }
@@ -35,7 +37,6 @@ object ShortcutIconUtils {
                 return
             }
         }
-        val fileName = "Icon-${System.currentTimeMillis()}.png"
         val file = try {
             File(iconFolder, fileName)
         } catch (e: NullPointerException) {

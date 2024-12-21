@@ -41,7 +41,7 @@ fun TopBar(modifier: Modifier = Modifier, scrollBehavior: TopAppBarScrollBehavio
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         tint = MaterialTheme.colorScheme.secondary,
-                        contentDescription = "more options"
+                        contentDescription = stringResource(R.string.topbar_more_option_button_description)
                     )
                 }
                 DropdownMenu(
@@ -50,13 +50,13 @@ fun TopBar(modifier: Modifier = Modifier, scrollBehavior: TopAppBarScrollBehavio
                 ) {
                     DropdownMenuItem(
                         text = { Text(text = stringResource(R.string.title_settings_activity)) },
-                        leadingIcon = { Icon(Icons.Default.Settings,null)},
+                        leadingIcon = { Icon(Icons.Default.Settings, null) },
                         onClick = {
                             context.startActivity(Intent(context, SettingsActivity::class.java))
                         })
                     DropdownMenuItem(
                         text = { Text(text = stringResource(R.string.title_activity_about)) },
-                        leadingIcon = { Icon(Icons.Default.Info,null)},
+                        leadingIcon = { Icon(Icons.Default.Info, null) },
                         onClick = {
                             context.startActivity(Intent(context, AboutActivity::class.java))
                         })

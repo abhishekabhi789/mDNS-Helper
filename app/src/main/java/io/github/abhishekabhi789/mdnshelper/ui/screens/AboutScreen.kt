@@ -46,14 +46,14 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
     val context = LocalContext.current
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text(text = "About")},
+            title = { Text(text = stringResource(R.string.title_activity_about)) },
             navigationIcon = {
                 IconButton(
                     onClick = onFinish
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "close activity"
+                        contentDescription = stringResource(R.string.finish_activity_button_label)
                     )
                 }
             })
@@ -86,17 +86,12 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
                 text = stringResource(id = R.string.app_name),
                 style = MaterialTheme.typography.headlineLarge,
             )
-            Text(text = "Version:  ${BuildConfig.VERSION_NAME}")
+            Text(text = stringResource(R.string.version_label, BuildConfig.VERSION_NAME))
             TextButton(onClick = {
                 context.startActivity(Intent(context, OssLicensesMenuActivity::class.java))
             }) {
-                Text(text = "Third Party Licenses")
+                Text(text = stringResource(R.string.license_info_label))
             }
-            Text(
-                text = "Copyright © 2024. All rights reserved.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
         }
     }
 }
@@ -104,5 +99,5 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
 @Preview(showSystemUi = true)
 @Composable
 fun PreviewAboutScreen() {
-    AboutScreen(Modifier){}
+    AboutScreen(Modifier) {}
 }

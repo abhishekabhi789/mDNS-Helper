@@ -52,7 +52,7 @@ fun SettingsScreen(
                     IconButton(onClick = onFinish) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "close activity"
+                            contentDescription = stringResource(R.string.finish_activity_button_label)
                         )
                     }
                 }, scrollBehavior = scrollBehavior
@@ -69,13 +69,13 @@ fun SettingsScreen(
                 .padding(horizontal = 8.dp)
         ) {
             SettingsGroup(
-                title = "API Method",
+                title = stringResource(R.string.settings_catagory_title_api_method),
                 icon = Icons.Default.Memory
             ) {
-                Text("When you select RxDnsSd as discovery method, then only RxDnsSd can resolve that service.")
+                Text(stringResource(R.string.api_method_note))
 
                 val discoveryMethod by viewModel.discoveryMethod.collectAsState()
-                BasicSettings(label = "Discovery Method") {
+                BasicSettings(label = stringResource(R.string.discovery_method_label)) {
                     val methods = DiscoverMethod.entries.map { it.name }
                     var expanded by remember { mutableStateOf(false) }
                     ChooseFromList(
@@ -90,7 +90,7 @@ fun SettingsScreen(
                         onExpandChanged = { expanded = it }
                     )
                 }
-                BasicSettings(label = "Resolving Method") {
+                BasicSettings(label = stringResource(R.string.resolving_method_label)) {
                     val resolvingMethod by viewModel.resolvingMethod.collectAsState()
                     val methods by viewModel.resolvingMethods.collectAsState()
                     var expanded by remember { mutableStateOf(false) }

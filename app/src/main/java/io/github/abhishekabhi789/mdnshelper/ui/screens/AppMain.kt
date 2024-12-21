@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.canhub.cropper.CropImageContract
@@ -53,14 +54,15 @@ import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
 import com.github.druk.rx2dnssd.BonjourService
+import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.bookmarks.BookmarkManager.BookMarkAction
 import io.github.abhishekabhi789.mdnshelper.data.MdnsInfo
 import io.github.abhishekabhi789.mdnshelper.data.ServiceInfo
 import io.github.abhishekabhi789.mdnshelper.ui.activities.MainActivity.Companion.TAG
 import io.github.abhishekabhi789.mdnshelper.ui.components.mainactivity.AddShortcutScreen
 import io.github.abhishekabhi789.mdnshelper.ui.components.mainactivity.ExtraInfoList
-import io.github.abhishekabhi789.mdnshelper.ui.components.serviceinfo.ServiceInfoItem
 import io.github.abhishekabhi789.mdnshelper.ui.components.mainactivity.TopBar
+import io.github.abhishekabhi789.mdnshelper.ui.components.serviceinfo.ServiceInfoItem
 import io.github.abhishekabhi789.mdnshelper.ui.components.serviceinfo.UnReachableBookmarks
 import io.github.abhishekabhi789.mdnshelper.utils.ShortcutIconUtils
 import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
@@ -86,9 +88,17 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
     var bottomSheetScreen by remember { mutableStateOf(BottomSheets.NONE) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val (fabLabel, fabIcon, fabAction) = if (discoveryRunning) {
-        Triple("Stop Scan", Icons.Default.SearchOff, viewModel::stopServiceDiscovery)
+        Triple(
+            R.string.fab_label_stop_scan,
+            Icons.Default.SearchOff,
+            viewModel::stopServiceDiscovery
+        )
     } else {
-        Triple("Start Scan", Icons.Default.Search, viewModel::startServiceDiscovery)
+        Triple(
+            R.string.fab_label_start_scan,
+            Icons.Default.Search,
+            viewModel::startServiceDiscovery
+        )
     }
     val imagePicker = rememberLauncherForActivityResult(CropImageContract()) { result ->
         if (result.isSuccessful) {
@@ -116,7 +126,7 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
             ExtendedFloatingActionButton(onClick = fabAction) {
                 Icon(imageVector = fabIcon, contentDescription = null)
                 Spacer(modifier = Modifier.padding(2.dp))
-                Text(text = fabLabel)
+                Text(text = stringResource(fabLabel))
             }
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -142,7 +152,7 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            Text(text = "No services found")
+                            Text(text = stringResource(R.string.no_service_found))
                         }
                     }
                 } else {
@@ -153,7 +163,7 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                                 .background(MaterialTheme.colorScheme.secondaryContainer)
                         ) {
                             Text(
-                                text = "Available services",
+                                text = stringResource(R.string.available_services),
                                 style = MaterialTheme.typography.titleSmall,
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             )
@@ -172,11 +182,13 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                                     actionSuccess = success
                                     scope.launch {
                                         val message = when (bookmarkAction) {
-                                            BookMarkAction.ADD -> if (success) "Added to bookmarks" else "failed to add to bookmarks"
-                                            BookMarkAction.REMOVE -> if (success) "Removed from bookmarks" else "Failed to remove from bookmarks"
+                                            BookMarkAction.ADD -> if (success) R.string.bookmarks_added else R.string.bookmarks_failed_to_add_bookmark
+                                            BookMarkAction.REMOVE -> if (success) R.string.bookmarks_removed else R.string.bookmarks_failed_to_remove_bookmark
                                         }
                                         snackbarHostState.currentSnackbarData?.dismiss()
-                                        snackbarHostState.showSnackbar(message = message)
+                                        snackbarHostState.showSnackbar(
+                                            message = context.getString(message)
+                                        )
                                     }
                                 }
                                 actionSuccess
@@ -191,7 +203,12 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                                                 bottomSheetScreen.data = mdnsInfo
                                             } else {
                                                 snackbarHostState.currentSnackbarData?.dismiss()
-                                                snackbarHostState.showSnackbar("Shortcut for ${mdnsInfo.getServiceName()} already added")
+                                                snackbarHostState.showSnackbar(
+                                                    context.getString(
+                                                        R.string.shortcut_already_added_toast,
+                                                        mdnsInfo.getServiceName()
+                                                    )
+                                                )
                                                 Log.i(
                                                     TAG,
                                                     "AppMain: shortcut already added for ${mdnsInfo.getServiceName()}"
@@ -223,7 +240,7 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                                 .background(MaterialTheme.colorScheme.secondaryContainer)
                         ) {
                             Text(
-                                text = "Unreachable bookmarks",
+                                text = stringResource(R.string.unreachable_bookmarks),
                                 style = MaterialTheme.typography.titleSmall,
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             )
@@ -238,17 +255,18 @@ fun AppMain(viewModel: MainActivityViewmodel = hiltViewModel()) {
                         var actionSuccess = false
                         it.action.invoke(viewModel, bookmark) { success: Boolean ->
                             actionSuccess = success
-                            val message = if (success) "Removed from bookmarks"
-                            else "Failed to remove from bookmarks"
+                            val message = if (success) R.string.bookmarks_removed
+                            else R.string.bookmarks_failed_to_remove_bookmark
                             scope.launch {
                                 val snackbarResult = snackbarHostState.showSnackbar(
-                                    message = message,
-                                    actionLabel = "Undo",
+                                    message = context.getString(message),
+                                    actionLabel = context.getString(R.string.undo),
                                     duration = SnackbarDuration.Short
                                 )
                                 when (snackbarResult) {
                                     SnackbarResult.Dismissed -> {}
                                     SnackbarResult.ActionPerformed ->
+                                        //undo action invoke
                                         BookMarkAction.ADD.action.invoke(viewModel, bookmark, {})
                                 }
                             }

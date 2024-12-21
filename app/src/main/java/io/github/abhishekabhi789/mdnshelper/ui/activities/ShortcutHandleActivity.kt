@@ -105,10 +105,13 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text(text = "Resolving device address")
+                                    Text(text = stringResource(R.string.shortcut_resolve_dialog_title))
                                 } else {
-                                    Text(text = "Address $address")
-
+                                    Text(
+                                        text = stringResource(
+                                            R.string.shortcut_on_address_found, address ?: ""
+                                        )
+                                    )
                                 }
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(
@@ -117,11 +120,11 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
                                 ) {
                                     if (!address.isNullOrEmpty()) {
                                         Button(onClick = { openUrl(address) }) {
-                                            Text(text = "Browse URL")
+                                            Text(text = stringResource(R.string.shortcut_resolve_dialog_browse_button_label))
                                         }
                                     }
                                     OutlinedButton(onClick = { stopActivity() }) {
-                                        Text(text = "Cancel")
+                                        Text(text = stringResource(R.string.shortcut_resolve_dialog_cancel_button_label))
                                     }
                                 }
                             }
@@ -152,7 +155,11 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
         val connection = object : CustomTabsServiceConnection() {
             override fun onServiceDisconnected(name: ComponentName?) {
                 Log.i(TAG, "onServiceDisconnected: ")
-                Toast.makeText(context, "tab closed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    R.string.shortcut_custom_tab_closed_toast,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
 
             override fun onCustomTabsServiceConnected(

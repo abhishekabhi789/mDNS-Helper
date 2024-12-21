@@ -25,7 +25,7 @@ data class MdnsInfo(val service: ServiceInfo) {
 
     fun getDomain(): String? = when (service) {
         is ServiceInfo.BonjourInfo -> service.bonjourInfo.domain
-        is ServiceInfo.NsdInfo -> "serviceName to be implemented"
+        is ServiceInfo.NsdInfo -> ""//not needed
     }
 
     fun getHostName(): String? = when (service) {

@@ -1,5 +1,73 @@
 <resources>
     <string name="app_name">mDNS Helper</string>
-    <string name="title_activity_about">About</string>
     <string name="title_settings_activity">Settings</string>
+    <!--UI-->
+    <!--Main Activity-->
+    <string name="no_service_found">No services found</string>
+    <string name="available_services">Available Services</string>
+    <string name="unreachable_bookmarks">Unreachable Bookmarks</string>
+    <!--top bar-->
+    <string name="topbar_more_option_button_description">More options</string>
+    <!--fab-->
+    <string name="fab_label_start_scan">Start Scan</string>
+    <string name="fab_label_stop_scan">Stop Scan</string>
+    <!--service info item-->
+    <string name="service_info_port">Port: %1$s</string>
+    <string name="service_info_more_info">More Info</string>
+    <string name="service_info_add_shortcut">Add Shortcut</string>
+    <string name="service_info_url_section_browse_button_label">Browse</string>
+    <string name="service_info_url_section_share_button_label">Share</string>
+    <string name="shortcut_already_added_toast">Shortcut for %1$s already added</string>
+    <!--bookmarking-->
+    <string name="label_bookmark_action_remove">Add to bookmarks</string>
+    <string name="bookmarks_added">Added to bookmarks</string>
+    <string name="bookmarks_failed_to_add_bookmark">Failed to add to bookmarks</string>
+    <string name="label_bookmark_action_add">Remove from bookmarks</string>
+    <string name="bookmarks_removed">Removed from bookmarks</string>
+    <string name="bookmarks_failed_to_remove_bookmark">Failed to remove from bookmarks</string>
+    <!--shortcut-->
+    <string name="add_shortcut_dialog_title">Add shortcut</string>
+    <string name="add_shortcut_dialog_description">Would you like to create a home screen shortcut for %1$s?</string>
+    <string name="add_shortcut_dialog_choose_icon">Choose an icon for shortcut</string>
+    <string name="shortcut_icon_enter_deletion_state">Delete Icons</string>
+    <string name="shortcut_icon_deletion_state_description">Click to delete this icon</string>
+    <string name="shortcut_icon_exit_deletion_state">Finish Delete</string>
+    <string name="add_shortcut_dialog_pick_new_icon">Select new icons from gallery</string>
+    <string name="add_shortcut_dialog_preferred_browser">Choose an icon for shortcut</string>
+    <string name="add_shortcut_dialog_cancel_operation">Cancel</string>
+    <string name="add_shortcut_dialog_create_shortcut">Create Shortcut</string>
+    <!--extra info-->
+    <string name="extra_info_dialog_title">Extra Info</string>
+    <string name="extra_info_is_empty">No extra info found for this service</string>
+    <string name="extra_info_copy_as_json">Copy all as JSON</string>
+    <string name="extra_info_copy_as_json_button_description">Copy as JSON</string>
+    <!--Settings Activity-->
+    <string name="settings_catagory_title_api_method">API Method</string>
+    <string name="api_method_note">When you select RxDnsSd as discovery method, then only RxDnsSd can resolve that service.</string>
+    <string name="discovery_method_label">Discovery Method</string>
+    <string name="resolving_method_label">Resolving Method</string>
+    <!--About Activity-->
+    <string name="title_activity_about">About</string>
+    <string name="version_label">Version: %1$s</string>
+    <string name="license_info_label">Third Party Licenses</string>
+    <!--browser choices-->
+    <string name="browser_choice_default">Default</string>
+    <string name="browser_choice_always_ask">Always Ask</string>
+    <string name="browser_choice_custom_tab">Custom Tab</string>
+    <!--permission-->
+    <string name="toast_on_granting_permission">Permission Granted</string>
+    <string name="toast_on_denying_permission">Permission denied for searching nearby devices</string>
+    <!--shortcuts-->
+    <string name="shortcut_resolve_dialog_title">Resolving device address</string>
+    <string name="shortcut_on_address_found">Address %1$s</string>
+    <string name="shortcut_resolve_dialog_browse_button_label">Browse URL</string>
+    <string name="shortcut_resolve_dialog_cancel_button_label">Cancel</string>
+    <string name="shortcut_custom_tab_closed_toast">Tab closed</string>
+    <!--misc-->
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="item_copied_to_clipboard">%1$s copied to clipboard</string>
+    <string name="finish_activity_button_label">Close activity</string>
+    <string name="undo">Undo</string>
+    <string name="chooser_dialog_title_browse_action">Choose an app for url %1$s</string>
+    <string name="chooser_dialog_title_share_action">Choose an app to share %1$s</string>
 </resources>

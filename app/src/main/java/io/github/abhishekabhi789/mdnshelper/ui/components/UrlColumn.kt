@@ -9,7 +9,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import io.github.abhishekabhi789.mdnshelper.R
 
 @Composable
 fun UrlColumn(
@@ -28,10 +30,13 @@ fun UrlColumn(
         AnimatedVisibility(visible = expanded) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ChipButton(
-                    label = "Browse",
+                    label = stringResource(R.string.service_info_url_section_browse_button_label),
                     onClick = onOpenClick
                 )
-                ChipButton(label = "Share", onClick = onShareClick)
+                ChipButton(
+                    label = stringResource(R.string.service_info_url_section_share_button_label),
+                    onClick = onShareClick
+                )
             }
         }
     }

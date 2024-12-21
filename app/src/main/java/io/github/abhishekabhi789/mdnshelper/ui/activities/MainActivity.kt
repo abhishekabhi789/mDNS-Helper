@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.mdnshelper.BuildConfig
+import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.ui.screens.AppMain
 import io.github.abhishekabhi789.mdnshelper.ui.theme.MDNSHelperTheme
 import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
@@ -54,8 +55,8 @@ class MainActivity : ComponentActivity() {
                     rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                         Log.i(TAG, "onCreate: permission granted - $isGranted")
                         Toast(this@MainActivity).run {
-                            if (isGranted) setText("Permission Granted")
-                            else setText("Permission denied for searching nearby devices")
+                            if (isGranted) setText(R.string.toast_on_granting_permission)
+                            else setText(R.string.toast_on_denying_permission)
                             duration = Toast.LENGTH_SHORT
                             show()
                         }
