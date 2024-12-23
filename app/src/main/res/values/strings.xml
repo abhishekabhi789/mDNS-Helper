@@ -46,6 +46,9 @@
     <string name="api_method_note">When you select RxDnsSd as discovery method, then only RxDnsSd can resolve that service.</string>
     <string name="discovery_method_label">Discovery Method</string>
     <string name="resolving_method_label">Resolving Method</string>
+    <string name="settings_catagory_browser_settings">Browser Settings</string>
+    <string name="preferred_browser">Preferred Browser</string>
+    <string name="settings_preferred_browser_description">Choose a method to open links in the scan result</string>
     <!--About Activity-->
     <string name="title_activity_about">About</string>
     <string name="version_label">Version: %1$s</string>
@@ -70,4 +73,5 @@
     <string name="undo">Undo</string>
     <string name="chooser_dialog_title_browse_action">Choose an app for url %1$s</string>
     <string name="chooser_dialog_title_share_action">Choose an app to share %1$s</string>
+    <string name="unknown">Unknown</string>
 </resources>

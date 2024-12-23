@@ -34,7 +34,7 @@ import javax.inject.Inject
 class MainActivityViewmodel @Inject constructor(
     private val dnssdHelper: ServiceDiscoveryManager,
     private val bookmarkManager: BookmarkManager,
-    private val shortcutManager: ShortcutManager?
+    private val shortcutManager: ShortcutManager?,
 ) : ViewModel() {
     private val _discoveryRunning = MutableStateFlow(false)
     val discoveryRunning: StateFlow<Boolean> = _discoveryRunning.asStateFlow()

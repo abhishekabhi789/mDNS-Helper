@@ -1,18 +1,11 @@
 package io.github.abhishekabhi789.mdnshelper.ui.activities
 
-import android.content.ComponentName
-import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.browser.customtabs.CustomTabsCallback
-import androidx.browser.customtabs.CustomTabsClient
-import androidx.browser.customtabs.CustomTabsIntent
-import androidx.browser.customtabs.CustomTabsServiceConnection
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +37,7 @@ import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.data.BrowserChoice
 import io.github.abhishekabhi789.mdnshelper.shortcut.ShortcutManager
 import io.github.abhishekabhi789.mdnshelper.ui.theme.MDNSHelperTheme
+import io.github.abhishekabhi789.mdnshelper.utils.CustomTabsHelper
 import io.github.abhishekabhi789.mdnshelper.utils.UrlUtils
 import io.github.abhishekabhi789.mdnshelper.viewmodel.ShortcutHandleViewmodel
 import kotlinx.coroutines.delay
@@ -54,7 +48,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
     private val viewModel: ShortcutHandleViewmodel by viewModels()
-    private var customTabConnection: CustomTabsServiceConnection? = null
+
+    @Inject
+    lateinit var customTabsHelper: CustomTabsHelper
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,57 +129,23 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
                 }
             }
         }
+        customTabsHelper.bindCustomTabService()
     }
 
     private fun openUrl(address: String?) {
         if (!address.isNullOrEmpty()) {
             val url = UrlUtils.addressAsUrl(address)
-            val chosenBrowser = intent.getStringExtra(ShortcutManager.KEY_PREFERRED_BROWSER)
-            if (chosenBrowser == BrowserChoice.CustomTab.packageName) {
-                openWithCustomTab(this, Uri.parse(url))
-            } else {
-                UrlUtils.openWithBrowser(
-                    context = this@ShortcutHandleActivity,
-                    url,
-                    chosenBrowser,
-                )
-            }
-        }
-    }
-
-    private fun openWithCustomTab(context: Context, uri: Uri) {
-        val connection = object : CustomTabsServiceConnection() {
-            override fun onServiceDisconnected(name: ComponentName?) {
-                Log.i(TAG, "onServiceDisconnected: ")
-                Toast.makeText(
-                    context,
-                    R.string.shortcut_custom_tab_closed_toast,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-
-            override fun onCustomTabsServiceConnected(
-                name: ComponentName,
-                client: CustomTabsClient
-            ) {
-                Log.i(TAG, "onCustomTabsServiceConnected: ")
-                client.warmup(0)
-                val session = client.newSession(CustomTabsCallback())
-                session?.let {
-                    it.mayLaunchUrl(uri, null, null)
-                    val customTabIntent = CustomTabsIntent.Builder(session)
-                        .build()
-                    customTabIntent.launchUrl(context, uri)
+            val browserChoice = intent.getStringExtra(ShortcutManager.KEY_PREFERRED_BROWSER)?.let {
+                when (it) {
+                    BrowserChoice.Default.packageName -> BrowserChoice.Default
+                    BrowserChoice.AskUser.packageName -> BrowserChoice.AskUser
+                    BrowserChoice.CustomTab.packageName -> BrowserChoice.CustomTab
+                    else -> BrowserChoice.SavedBrowser(it)
                 }
             }
-        }
-        customTabConnection = connection
-        val packageName = CustomTabsClient.getPackageName(context, null)
-        Log.d(TAG, "openWithCustomTab: packageName $packageName")
-        packageName?.let {
-            CustomTabsClient.bindCustomTabsService(context, packageName, connection)
-        }
 
+            UrlUtils.browseUrl(context = this, url = url, browserChoice = browserChoice)
+        }
     }
 
     override fun onRestart() {
@@ -193,10 +155,8 @@ class ShortcutHandleActivity @Inject constructor() : ComponentActivity() {
     }
 
     private fun stopActivity() {
-        customTabConnection?.let {
-            Log.i(TAG, "onRestart: disconnecting customTab")
-            unbindService(it)
-            customTabConnection = null
+        if (this::customTabsHelper.isInitialized) {
+            customTabsHelper.unbindCustomTabsService()
         }
         viewModel.terminateBackgroundProcess()
         finish()

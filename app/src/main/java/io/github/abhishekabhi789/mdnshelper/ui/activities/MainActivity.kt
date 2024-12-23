@@ -30,12 +30,17 @@ import io.github.abhishekabhi789.mdnshelper.BuildConfig
 import io.github.abhishekabhi789.mdnshelper.R
 import io.github.abhishekabhi789.mdnshelper.ui.screens.AppMain
 import io.github.abhishekabhi789.mdnshelper.ui.theme.MDNSHelperTheme
+import io.github.abhishekabhi789.mdnshelper.utils.CustomTabsHelper
 import io.github.abhishekabhi789.mdnshelper.viewmodel.MainActivityViewmodel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private var shortcutAddedReceiver: ShortcutAddedReceiver? = null
     private val viewModel: MainActivityViewmodel by viewModels()
+
+    @Inject
+    lateinit var customTabsHelper: CustomTabsHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -81,12 +86,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        customTabsHelper.bindCustomTabService()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: destroying nsdHelper")
         viewModel.stopServiceDiscovery()
+        customTabsHelper.unbindCustomTabsService()
     }
 
     override fun onStart() {

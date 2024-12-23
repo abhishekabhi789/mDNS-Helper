@@ -28,7 +28,7 @@ fun ChooseFromList(
     expanded: Boolean,
     listItems: List<String>,
     selectedItem: String,
-    onSelection: (String) -> Unit,
+    onSelection: (index:Int) -> Unit,
     onExpandChanged: (Boolean) -> Unit
 ) {
     ExposedDropdownMenuBox(
@@ -66,7 +66,7 @@ fun ChooseFromList(
                                 MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                         ),
                     onClick = {
-                        onSelection(it)
+                        onSelection(listItems.indexOf(it))
                         onExpandChanged(false)
                     },
                 )

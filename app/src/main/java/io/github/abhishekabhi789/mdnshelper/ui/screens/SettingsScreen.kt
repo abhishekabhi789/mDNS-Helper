@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,21 +20,24 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import io.github.abhishekabhi789.mdnshelper.R
+import io.github.abhishekabhi789.mdnshelper.data.BrowserChoice
 import io.github.abhishekabhi789.mdnshelper.nsd.DiscoverMethod
-import io.github.abhishekabhi789.mdnshelper.nsd.ResolvingMethod
 import io.github.abhishekabhi789.mdnshelper.ui.components.settings.BasicSettings
 import io.github.abhishekabhi789.mdnshelper.ui.components.settings.ChooseFromList
 import io.github.abhishekabhi789.mdnshelper.ui.components.settings.SettingsGroup
+import io.github.abhishekabhi789.mdnshelper.utils.UrlUtils
 import io.github.abhishekabhi789.mdnshelper.viewmodel.SettingsViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,6 +47,7 @@ fun SettingsScreen(
     viewModel: SettingsViewmodel = hiltViewModel(),
     onFinish: () -> Unit
 ) {
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         topBar = {
@@ -76,17 +81,13 @@ fun SettingsScreen(
 
                 val discoveryMethod by viewModel.discoveryMethod.collectAsState()
                 BasicSettings(label = stringResource(R.string.discovery_method_label)) {
-                    val methods = DiscoverMethod.entries.map { it.name }
+                    val methods = DiscoverMethod.entries
                     var expanded by remember { mutableStateOf(false) }
                     ChooseFromList(
                         expanded = expanded,
-                        listItems = methods,
+                        listItems = methods.map { it.name },
                         selectedItem = discoveryMethod.name,
-                        onSelection = {
-                            DiscoverMethod.valueOf(it).let { method ->
-                                viewModel.updateDiscoveryMethod(method)
-                            }
-                        },
+                        onSelection = { viewModel.updateDiscoveryMethod(methods[it]) },
                         onExpandChanged = { expanded = it }
                     )
                 }
@@ -98,12 +99,47 @@ fun SettingsScreen(
                         expanded = expanded,
                         listItems = methods.map { it.name },
                         selectedItem = resolvingMethod.name,
-                        onSelection = {
-                            ResolvingMethod.valueOf(it).let { method ->
-                                viewModel.updateResolvingMethod(method)
-                            }
-                        },
+                        onSelection = { viewModel.updateResolvingMethod(methods[it]) },
                         onExpandChanged = { expanded = it }
+                    )
+                }
+            }
+            SettingsGroup(
+                title = stringResource(R.string.settings_catagory_browser_settings),
+                icon = Icons.Default.OpenInBrowser
+            ) {
+                BasicSettings(
+                    label = stringResource(R.string.preferred_browser),
+                    description = stringResource(R.string.settings_preferred_browser_description)
+                ) {
+                    val savedPreference by viewModel.preferredBrowser.collectAsState()
+                    val defaultChoices = remember {
+                        listOf(
+                            BrowserChoice.Default,
+                            BrowserChoice.CustomTab,
+                            BrowserChoice.AskUser
+                        )
+                    }
+                    val installedBrowsers = remember { UrlUtils.getBrowsers(context) }
+                    val choices by remember(defaultChoices, installedBrowsers) {
+                        derivedStateOf { defaultChoices + installedBrowsers }
+                    }
+                    val preferredBrowser by remember {
+                        derivedStateOf {
+                            when {
+                                savedPreference in defaultChoices -> savedPreference
+                                savedPreference.packageName in installedBrowsers.map { it.packageName } -> savedPreference
+                                else -> BrowserChoice.AskUser// if the choice not available, reset as ask user
+                            }
+                        }
+                    }
+                    var expanded by remember { mutableStateOf(false) }
+                    ChooseFromList(
+                        expanded = expanded,
+                        listItems = choices.map { it.getLabel(context) },
+                        selectedItem = preferredBrowser.getLabel(context),
+                        onExpandChanged = { expanded = it },
+                        onSelection = { viewModel.updatePreferredBrowser(choices[it]) }
                     )
                 }
             }

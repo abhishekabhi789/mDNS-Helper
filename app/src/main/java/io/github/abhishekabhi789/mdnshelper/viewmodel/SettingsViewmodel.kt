@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.abhishekabhi789.mdnshelper.data.BrowserChoice
 import io.github.abhishekabhi789.mdnshelper.nsd.DiscoverMethod
 import io.github.abhishekabhi789.mdnshelper.nsd.ResolvingMethod
 import io.github.abhishekabhi789.mdnshelper.utils.AppPreferences
@@ -31,6 +32,12 @@ class SettingsViewmodel @Inject constructor(private val appPreferences: AppPrefe
         discoveryMethod.value.getSupportedResolvingMethod()
     )
 
+    val preferredBrowser = appPreferences.preferredBrowser.stateIn(
+        viewModelScope,
+        SharingStarted.Lazily,
+        BrowserChoice.CustomTab
+    )
+
     fun updateDiscoveryMethod(method: DiscoverMethod) {
         Log.i(TAG, "updateDiscoveryMethod: method $method")
         viewModelScope.launch { appPreferences.setDiscoverMethod(method) }
@@ -39,6 +46,11 @@ class SettingsViewmodel @Inject constructor(private val appPreferences: AppPrefe
     fun updateResolvingMethod(method: ResolvingMethod) {
         Log.i(TAG, "updateResolvingMethod: method $method")
         viewModelScope.launch { appPreferences.setResolvingMethod(method) }
+    }
+
+    fun updatePreferredBrowser(choice: BrowserChoice) {
+        Log.i(TAG, "updatePreferredBrowser: choice $choice")
+        viewModelScope.launch { appPreferences.setPreferredBrowser(choice) }
     }
 
     companion object {

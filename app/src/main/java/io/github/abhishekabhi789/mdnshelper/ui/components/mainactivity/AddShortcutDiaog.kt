@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -79,6 +80,7 @@ fun AddShortcutScreen(
     pickNewIcon: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     val shortcutIconList by viewModel.shortcutIcons.collectAsState()
     var preferredBrowser: BrowserChoice by remember { mutableStateOf(BrowserChoice.Default) }
     val browsersAvailable: List<BrowserChoice.InstalledBrowser> =
@@ -212,7 +214,7 @@ fun AddShortcutScreen(
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                 ) {
                     Text(
-                        text = stringResource(preferredBrowser.choiceLabel),
+                        text = preferredBrowser.getLabel(context),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.End
@@ -231,7 +233,7 @@ fun AddShortcutScreen(
                         BrowserChoice.CustomTab
                     ).forEach { browser ->
                         DropdownMenuItem(
-                            text = { Text(text = stringResource(browser.choiceLabel)) },
+                            text = { Text(text = browser.getLabel(context)) },
                             onClick = {
                                 preferredBrowser = browser
                                 dropDownExpanded = false
@@ -239,7 +241,7 @@ fun AddShortcutScreen(
                     }
                     browsersAvailable.forEach { browser ->
                         DropdownMenuItem(
-                            text = { Text(text = browser.appName) },
+                            text = { Text(text = browser.getLabel(context)) },
                             leadingIcon = {
                                 Image(
                                     bitmap = browser.appIcon.asImageBitmap(),
